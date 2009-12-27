@@ -4,22 +4,8 @@ import pygtk, gtk
 
 from gui import PyGUPnPCPUI
 from action import UPnPAction
-
-class DIDLParser(object):
-  def __init__(self,  xml_data):
-    self.containers = []
-    self.objects = []
-
-    parser = GUPnPAV.GUPnPDIDLLiteParser()
-    parser.connect("container_available", self.new_container)
-    parser.connect("item_available", self.new_item)
-    parser.parse_didl(xml_data)
-        
-  def new_item(self, node, object):
-    self.objects.append(object)
-
-  def new_container(self, node, object):
-    self.containers.append(object)
+from DIDLParser import DIDLParser
+from UPnPDeviceManager import UPnPDeviceManager
 
 
 class PyGUPnPCP(object):
@@ -45,84 +31,12 @@ class PyGUPnPCP(object):
   def main(self):
     GObject.threads_init()
 
-    # Get a default maincontext
-    self.main_ctx = GLib.main_context_default() 
-
-    self.ctx_mgr = GUPnP.ContextManager.new(self.main_ctx, 0)
-    self.ctx_mgr.connect("context_available", self.new_ctx)
-
-#    GObject.timeout_add(3000, self.list_cur_devices)
+    self.device_mgr = UPnPDeviceManager()
+    self.device_mgr.connect("device-available", self.device_available)
+    self.device_mgr.connect("device-unavailable", self.device_unavailable)
 
     self.ui = PyGUPnPCPUI(self)
     self.ui.main()
-
-  def new_ctx(self, ctx_mgr, ctx):
-
-    self.contexts.append(ctx)
-
-    # Bind to the context in the maincontext on any port
-    cp  = GUPnP.ControlPoint().new(ctx, "upnp:rootdevice")
-
-    # Use glib style .connect() as a callback on the controlpoint to listen for new devices
-    cp.connect("device-proxy-available", self.device_available)
-    cp.connect("device-proxy-unavailable", self.device_unavailable)
-
-    # "Tell the Control Point to Start Searching"
-    GSSDP.ResourceBrowser.set_active(cp, True)
-    
-    self.cps.append(cp)
-
-  def list_cur_devices(self):
-    for d in self.devices:
-      print "Device: %s (%s)" % (d.get_model_name(), d.get_udn())
-      for s in self.device_services[d.get_udn()]:
-        print "\tService: %s" % s.get_service_type()
-        if not s.get_udn() in self.introspections:
-          continue
-        for a in self.introspections[s.get_udn()].list_actions():
-          print "\t\tAction: %s" % a.name
-          
-    print "Current Sources:"
-    for i in self.sources:
-      print "\t%s (%s)" % (i.get_model_name(), i.get_udn())
-
-    print "Current Renderers:"
-    for i in self.renderers:
-      print "\t%s (%s)" % (i.get_model_name(), i.get_udn())
-
-    print "-" * 30
-
-    return True
-
-  def is_source(self, device):
-    if not isinstance(device, basestring):
-      device = device.get_udn()
-  
-    if not device in self.device_services:
-      return False
-  
-    for s in self.device_services[device]:
-      if "ContentDirectory" in s.get_service_type():
-        return s
-  
-    return False
-
-  def is_renderer(self, device):
-    if not isinstance(device, basestring):
-      print device.get_friendly_name()
-      device = device.get_udn()
-  
-    if not device in self.device_services:
-      return False
-
-
-    for s in self.device_services[device]:
-      print s.get_service_type()
-      if "AVTransport" in s.get_service_type():
-        return s
-  
-    return False
-
 
   def stop_object(self, source, renderer, item):
     av_serv = self.get_av_for_renderer(renderer)
@@ -138,7 +52,7 @@ class PyGUPnPCP(object):
     print "post action"
 
   def get_av_for_renderer(self, renderer):
-    services = self.device_services[renderer.get_udn()]
+    services = self.device_mgr.device_services[renderer.get_udn()]
     av_serv = None
     for s in services:
       if "AVTransport" in s.get_service_type():
@@ -211,8 +125,7 @@ class PyGUPnPCP(object):
     The UI will call this and then continue.  The calback for the
     async browse function will populate the UI
     """
-    serv = self.is_source(device.get_udn())
-  
+    serv = self.device_mgr.is_source(device.get_udn())
     assert serv
 
     in_data = {"ObjectID": object_id, "BrowseFlag": "BrowseDirectChildren",
@@ -223,123 +136,25 @@ class PyGUPnPCP(object):
     if not return_data:
       print "Error initiating the Browse action"
   
-  def server_introspection(self, service, introspection, error, userdata):
-    self.introspections[service.get_udn()] = introspection
-
-  def device_available(self, cp, device):
+  def device_available(self, mgr, device):
     print "%s (%s) is now available" % (device.get_model_name(), device.get_friendly_name())
 
-    for d in self.devices:
-	if d.get_udn() == device.get_udn():
-          # We can only assume that the old one dropped off the network
-          # and didn't tell us about it.  So manually remove it then proceed
-          # to readd.
-          print "Duplicate device online?  Removing old entry"
-	  self.device_unavailable(cp, d)
+    if device.is_source:
+      self.ui.add_source(device, device.icon_file)
 
-    self.devices.append(device)
-  
-    (icon_url, _, _, _, _) = device.get_icon_url(None, 32, 22, 22, False)
-    icon_file = None
-    if icon_url:
-      try:
-        data = urllib2.urlopen(icon_url)
-        f, icon_file = tempfile.mkstemp()
-        os.write(f, ''.join(data.readlines()))
-        os.close(f)
-      except urllib2.URLError:
-        pass
-     
-    self.device_services[device.get_udn()] = device.list_services()
-    
-    for s in self.device_services[device.get_udn()]:
-      s.get_introspection_async(self.server_introspection, None)
+    if device.is_renderer:
+      self.ui.add_renderer(device, device.icon_file)
 
-    if self.is_source(device):
-      self.sources.append(device)
-      self.ui.add_source(device, icon_file)
-
-    if self.is_renderer(device):
-      self.renderers.append(device)
-      self.ui.add_renderer(device, icon_file)
-
-    if icon_file:
-      self.created_files.append(icon_file)
-
-  def device_unavailable(self, cp, device):
+  def device_unavailable(self, mgr, device):
     print "%s has disappeared!" % device.get_model_name()
-    for d in self.devices:
-      if d.get_udn() == device.get_udn():
-        self.devices.remove(d)
 
-
-    for d in self.sources:
-      if d.get_udn() == device.get_udn():
-        self.sources.remove(d)
-        self.ui.remove_source(d)
+    if device.is_source:
+      self.ui.remove_source(device)
         
-    for d in self.renderers:
-      if d.get_udn() == device.get_udn():
-        self.renderers.remove(d)
-        self.ui.remove_renderer(d)
+    if device.is_renderer:
+      self.ui.remove_renderer(device)
 
 if __name__ == "__main__":
   prog = PyGUPnPCP()
   prog.main()
-
-
-
-
-
-
-
-#  for service in device_services[device.get_udn()]:
-#      introspections.remove(service.get_udn())
-
-#  if device.get_model_name() == "MediaTomb":
-#      for service in device.list_services():
-#          print service.get_service_type()
-#          if "ContentDirectory" in service.get_service_type():
-#              service.get_introspection_async(server_introspection, None)
-
-
-
-#  actions = intro.list_actions()
-#  print len(actions)
-#  for i in actions:
-#      print service.get_service_type(), i.name      
-#      if i.name == "SetAVTransportURI":
-#          dict = {"Speed": "1", "InstanceID": "0"}
-#          muri = "http://192.168.1.55:49152/content/media/object_id=6327&res_id=0&ext=.mp3"
-#          curi = "http://192.168.1.55:49152/content/media/object_id=6327&res_id=0&ext=.mp3"
-#          data = {"InstanceID": "0", "CurrentURI": curi, "CurrentURIMetaData": muri} 
-#          service.send_action_hash(i.name, data, {})
-#	  print "Done setting URI"
-#          data2 = {"Speed": "1", "InstanceID": "0"}
-#          service.send_action_hash("Stop", {"InstanceID": 0}, {})
-#          print "Done Stopping"
-#          service.send_action_hash("Play", data2, {})
-
-
-  
-
-#def server_introspection(service, introspection, error, userdata):
-#  print "Got server introspection"
-#  for i in introspection.list_actions():
-#      if i.name == "Browse":
-#         in_data = {"ObjectID": "0", "BrowseFlag": "BrowseDirectChildren",
-#		    "Filter": "", "StartingIndex": "0", "RequestCount": "0",
-#		    "SortCriteria": ""}
-#         out_data = {"Result": "", "NumberReturned": "", "TotalMatches": "", "UpdateID": ""}#
-#	 print "SEND ACTION"
-#         return_data = service.send_action_hash("Browse", in_data, out_data)
-#	 global serv
-#	 serv=service
-#	 print "Good news!"
-#	 print return_data[1]["Result"]
-#	 parser = GUPnPAV.GUPnPDIDLLiteParser()
-#	 parser.connect("container_available", new_container)
-#	 parser.connect("item_available", new_item)
-#	 parser.parse_didl(return_data[1]["Result"])
-#	 print len(objects)
 
