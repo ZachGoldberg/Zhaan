@@ -4,8 +4,27 @@ import pygtk, gtk
 
 from gui import PyGUPnPCPUI
 from action import UPnPAction
+
 from DIDLParser import DIDLParser
 from UPnPDeviceManager import UPnPDeviceManager
+
+class DIDLParser(object):
+  def __init__(self,  xml_data):
+    self.containers = []
+    self.objects = []
+
+    print xml_data
+
+    parser = GUPnPAV.GUPnPDIDLLiteParser()
+    parser.connect("container_available", self.new_container)
+    parser.connect("item_available", self.new_item)
+    parser.parse_didl(xml_data)
+        
+  def new_item(self, node, object):
+    self.objects.append(object)
+
+  def new_container(self, node, object):
+    self.containers.append(object)
 
 
 class PyGUPnPCP(object):
@@ -14,51 +33,46 @@ class PyGUPnPCP(object):
     self.introspections = {}
     self.device_services = {}
     
-    self.sources = []
-    self.renderers = []
     self.ui = None
     self.cps = []
     self.contexts = []  
     self.created_files = []
 
-    atexit.register(self.cleanup_files)
-
-  def cleanup_files(self):
-    for i in self.created_files:
-      os.unlink(i)
-    
 
   def main(self):
-    GObject.threads_init()
-
     self.device_mgr = UPnPDeviceManager()
-    self.device_mgr.connect("device-available", self.device_available)
-    self.device_mgr.connect("device-unavailable", self.device_unavailable)
 
+    self.device_mgr.connect("device_available", self.device_available)
+    self.device_mgr.connect("device_unavailable", self.device_unavailable)
+    
     self.ui = PyGUPnPCPUI(self)
     self.ui.main()
 
+  def device_available(self, manager, device):
+    if device.is_source:
+      self.ui.add_source(device, device.icon_file)
+    elif device.is_renderer:
+      self.ui.add_renderer(device, device.icon_file)
+
+  def device_unavailable(self, manager, device):
+    if device.is_source:
+      self.ui.remove_source(device)
+    elif device.is_renderer:
+      self.ui.remove_renderer(device)
+
+
   def stop_object(self, source, renderer, item):
-    av_serv = self.get_av_for_renderer(renderer)
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     data = {"InstanceID": 0}
     av_serv.send_action_hash("Stop", data, {})
 
   def pause_object(self, source, renderer, item):
     print "Sending Pause"
-    av_serv = self.get_av_for_renderer(renderer)
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     data = {"InstanceID": 0}
     print "Pre action"
     av_serv.send_action_hash("Pause", data, {})
     print "post action"
-
-  def get_av_for_renderer(self, renderer):
-    services = self.device_mgr.device_services[renderer.get_udn()]
-    av_serv = None
-    for s in services:
-      if "AVTransport" in s.get_service_type():
-        av_serv = s
-        break
-    return av_serv
     
   def play_object(self, source, renderer, item):
     resources = None
@@ -66,7 +80,7 @@ class PyGUPnPCP(object):
        resources = item.get_resources()
  
     uri = ""
-    av_serv = self.get_av_for_renderer(renderer) 
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
 
     if resources:
       uri = resources[0].get_uri()
@@ -76,8 +90,10 @@ class PyGUPnPCP(object):
                      av_serv,
                      "SetAVTransportURI",
                      data)
-
-      self.execute_action(act)
+      act.register_device_manager(self.device_mgr)
+      act.execute()
+    else:
+      print "No Resources for item?"
 
     print "Sending action..."
     data = {"InstanceID": "0", "CurrentURI": uri, "CurrentURIMetaData": uri, "Speed": 1} 
@@ -86,18 +102,8 @@ class PyGUPnPCP(object):
                      "Play",
                      data)
 
-    self.execute_action(act)
-
-
-  def execute_action(self, action):
-    if not action.is_executable():
-      device = action.device_udn
-      services = self.device_services[device]
-      for s in services:
-        if s.get_udn() == action.service_udn:
-          action.service = s
-
-    action.execute()
+    act.register_device_manager(self.device_mgr)
+    act.execute()
 
   def children_loaded(self, service, action, data):
     """
@@ -125,36 +131,33 @@ class PyGUPnPCP(object):
     The UI will call this and then continue.  The calback for the
     async browse function will populate the UI
     """
-    serv = self.device_mgr.is_source(device.get_udn())
+    serv = self.device_mgr.is_source(device)
+  
     assert serv
 
     in_data = {"ObjectID": object_id, "BrowseFlag": "BrowseDirectChildren",
                "Filter": "*", "StartingIndex": "0", "RequestCount": "0",
                "SortCriteria": ""}
 
-    return_data = serv.begin_action_hash("Browse", self.children_loaded, None, in_data)
-    if not return_data:
-      print "Error initiating the Browse action"
+    return_data = serv.begin_action_list("Browse",
+                                         ["ObjectID",
+                                          "BrowseFlag",
+                                          "Filter",
+                                          "StartingIndex",
+                                          "RequestCount"],
+                                         [GObject.TYPE_STRING,
+                                          GObject.TYPE_STRING,
+                                          GObject.TYPE_STRING,
+                                          GObject.TYPE_STRING,
+                                          GObject.TYPE_STRING],
+                                         [str(object_id),
+                                          "BrowseDirectChildren",
+                                          "*",
+                                          "0",
+                                          "0",
+                                          ""],
+                                         self.children_loaded, None)
   
-  def device_available(self, mgr, device):
-    print "%s (%s) is now available" % (device.get_model_name(), device.get_friendly_name())
-
-    if device.is_source:
-      self.ui.add_source(device, device.icon_file)
-
-    if device.is_renderer:
-      self.ui.add_renderer(device, device.icon_file)
-
-  def device_unavailable(self, mgr, device):
-    print "%s has disappeared!" % device.get_model_name()
-
-    if device.is_source:
-      self.ui.remove_source(device)
-        
-    if device.is_renderer:
-      self.ui.remove_renderer(device)
-
 if __name__ == "__main__":
   prog = PyGUPnPCP()
   prog.main()
-

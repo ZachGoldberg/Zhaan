@@ -1,5 +1,5 @@
 from gi.repository import GObject, GUPnP, GLib, GSSDP
-import urllib2, tempfile, os
+import urllib2, tempfile, os, atexit
 
 class UPnPDeviceManager(GObject.GObject):
 
@@ -51,11 +51,30 @@ class UPnPDeviceManager(GObject.GObject):
   
     return False
 
+  def activate_action(self, action):
+    if not action:
+      return
+
+    if action.is_activated():
+      if action.device.valid:
+        return
+
+    device = None
+    for d in self.devices:
+      if d.get_udn() == action.device_udn:
+        device = d
+
+    service = None  
+    for s in self.device_services.get(action.device_udn, []):
+      if s.get_service_type() == action.service_type:
+        service = s
+
+    action.activate(device, service)
+
   def __init__(self):
       
       super(UPnPDeviceManager, self).__init__()
       GObject.threads_init()
-        
       GObject.signal_new("device-available", UPnPDeviceManager, 
                          GObject.SIGNAL_RUN_LAST, 
                          GObject.TYPE_BOOLEAN, (GObject.TYPE_PYOBJECT,))
@@ -64,7 +83,8 @@ class UPnPDeviceManager(GObject.GObject):
                          GObject.SIGNAL_RUN_LAST, 
                          GObject.TYPE_BOOLEAN, (GObject.TYPE_PYOBJECT,))
 
-      
+      atexit.register(self.cleanup_files)
+
       self.contexts = []
       self.cps = []
       self.devices = []
@@ -82,6 +102,9 @@ class UPnPDeviceManager(GObject.GObject):
       self.ctx_mgr = GUPnP.ContextManager.new(self.main_ctx, 0)
       self.ctx_mgr.connect("context_available", self.new_ctx)
 
+  def cleanup_files(self):
+    for i in self.created_files:
+      os.unlink(i)
 
   def new_ctx(self, ctx_mgr, ctx):
 
@@ -99,15 +122,29 @@ class UPnPDeviceManager(GObject.GObject):
     
       self.cps.append(cp)
 
+  def get_service_on_device(self, device, service_type):
+    services = []
+    try:
+      if isinstance(device, basestring):      
+        services = self.device_services[device]
+      else:
+        services = self.device_services[device.get_udn()]
+    except:
+      return None
+
+    for service in services:
+      if service_type in service.get_service_type():
+        return service
+
+    return None
+
+
   def device_available(self, cp, device):
     for d in self.devices:
 	if d.get_udn() == device.get_udn():
-          # We can only assume that the old one dropped off the network
-          # and didn't tell us about it.  So manually remove it then proceed
-          # to readd.
-          print "Duplicate device online?  Removing old entry"
-	  self.device_unavailable(cp, d)
-
+          print "Duplicate device online?  Ignoring new entity."
+          return
+         
     self.devices.append(device)
   
     (icon_url, _, _, _, _) = device.get_icon_url(None, 32, 22, 22, False)
@@ -130,7 +167,8 @@ class UPnPDeviceManager(GObject.GObject):
 
     device.is_source = False
     device.is_renderer = False
-
+    device.valid = True
+    
     if self.is_source(device):
       self.sources.append(device)
       device.is_source = True
@@ -142,9 +180,13 @@ class UPnPDeviceManager(GObject.GObject):
     self.emit("device-available", device)
 
   def device_unavailable(self, cp, device):
+    original = None
     for d in self.devices:
       if d.get_udn() == device.get_udn():
         self.devices.remove(d)
+        original = d
+        # Ensure that nobody uses the old reference
+        d.valid = False
 
     for d in self.sources:
       if d.get_udn() == device.get_udn():
@@ -154,7 +196,8 @@ class UPnPDeviceManager(GObject.GObject):
       if d.get_udn() == device.get_udn():
         self.renderers.remove(d)
 
-    self.emit("device-unavailable", device)
+    self.device_services[d.get_udn()] = []
+    self.emit("device-unavailable", original)
 
   def server_introspection(self, service, introspection, error, userdata):
     self.introspections[service.get_udn()] = introspection
