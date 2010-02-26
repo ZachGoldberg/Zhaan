@@ -2,7 +2,6 @@ from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject, libsoup
 import os, urllib2, tempfile, atexit
 import pygtk, gtk
 
-from gui import PyGUPnPCPUI
 from action import UPnPAction
 
 from DIDLParser import DIDLParser
@@ -44,8 +43,23 @@ class PyGUPnPCP(object):
 
     self.device_mgr.connect("device_available", self.device_available)
     self.device_mgr.connect("device_unavailable", self.device_unavailable)
-    
-    self.ui = PyGUPnPCPUI(self)
+
+    # Determine which kind of UI to use based on whats available
+    try:
+      import hildon
+      from gui.hildonui import ZhaanUI
+    except:      
+      pass
+
+    if not "ZhaanUI" in dir():
+      try:
+        import gtk
+        from gui.gtkui import ZhaanUI
+      except:
+        sys.stderr.write("Could not find hildon or gtk.")
+        sys.exit(1)
+      
+    self.ui = ZhaanUI(self)
     self.ui.main()
 
   def device_available(self, manager, device):

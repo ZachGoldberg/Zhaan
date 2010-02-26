@@ -98,7 +98,7 @@ class UPnPDeviceManager(GObject.GObject):
       self.main_ctx = GLib.main_context_default() 
         
       # Use the built in GUPnP Network Manager to listen on 
-      # all interfaces
+      # all interfaces      
       self.ctx_mgr = GUPnP.ContextManager.new(self.main_ctx, 0)
       self.ctx_mgr.connect("context_available", self.new_ctx)
 
@@ -107,7 +107,7 @@ class UPnPDeviceManager(GObject.GObject):
       os.unlink(i)
 
   def new_ctx(self, ctx_mgr, ctx):
-
+      print "NEW CTX" * 10
       self.contexts.append(ctx)
 
       # Bind to the context in the maincontext on any port

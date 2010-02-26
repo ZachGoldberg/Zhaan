@@ -1,12 +1,10 @@
 #!/usr/bin/env python
+import gtk, hildon, gobject
 from gi.repository import GUPnP, GUPnPAV
-import pygtk
-pygtk.require('2.0')
-import gtk, gobject
 
-from playlist import Playlist
+from gui.hildonplaylist import Playlist
 
-class PyGUPnPCPUI(object):
+class ZhaanUI(object):
     def hello(self, widget, data=None):
         print "Hello World"
 
@@ -18,25 +16,24 @@ class PyGUPnPCPUI(object):
         print "destroy signal occurred"
         gtk.main_quit()
 
-    def source_changed(self, box):
-        active = self.source_list.get_active()
-        if active == 0: # The title entry
-            self.clear_source_browser()
-            return
-        active -= 1
+    def source_changed(self, box, index):
+        active = self.source_list.get_active(0)
 
+        if active < 0: # Selected nothing
+            return
+        
         self.stack = []
         self.source_device = self.sources[active]
+        self.select_source.set_title(self.source_device.get_friendly_name())
         self.upnp.load_children(self.source_device)
 
-    def renderer_changed(self, box):
+    def renderer_changed(self, box, index):
         active = self.renderer_list.get_active()
-        if active == 0: # The title entry
+
+        if active < 0: # Selected nothing
             return
-        active -= 1
-
+        
         self.renderer_device = self.renderers[active]
-
 
     def enqueue_or_dive(self, tree, col_loc, col):
         item = self.items[col_loc[0]]
@@ -134,11 +131,19 @@ class PyGUPnPCPUI(object):
                               item)
         
     def stop(self, playlist, item):
+        if not self.source_device or not self.renderer_device:
+            print "Missing either source or destination device"
+            return
+
         self.upnp.stop_object(self.source_device,
                               self.renderer_device,
                               self.playing_item)
 
     def pause(self, playlist, item):
+        if not self.source_device or not self.renderer_device:
+            print "Missing either source or destination device"
+            return
+
         self.upnp.pause_object(self.source_device,
                               self.renderer_device,
                               self.playing_item)
@@ -147,32 +152,50 @@ class PyGUPnPCPUI(object):
         self.top_bar = gtk.HBox()
 	
         liststore = gtk.ListStore(str, str, object)
-        self.source_list = gtk.ComboBox(liststore)
+        self.source_list = hildon.TouchSelector()
+        
         cellpb = gtk.CellRendererPixbuf()
 	cell = gtk.CellRendererText()
-        self.source_list.pack_start(cellpb, False)
-        self.source_list.pack_start(cell, True)
 
-        self.source_list.set_cell_data_func(cellpb, self.make_pb)
-	self.source_list.add_attribute(cell, 'text', 0)
-	self.source_list.get_model().append(["Media Sources", gtk.STOCK_OPEN, None])
-        self.source_list.set_active(0)
+        self.source_list.append_text_column(liststore, False)
+        col1 = self.source_list.get_column(0)
+        col1.pack_start(cellpb)
+
+        col1.set_cell_data_func(cellpb, self.make_pb)        
+
+        self.source_list.set_active(0, 0)
         self.source_list.connect("changed", self.source_changed)
 
+        
         liststore = gtk.ListStore(str, str, object)
-        self.renderer_list = gtk.ComboBox(liststore)
+        self.renderer_list = hildon.TouchSelector()
+        
         cellpb = gtk.CellRendererPixbuf()
 	cell = gtk.CellRendererText()
-        self.renderer_list.pack_start(cellpb, False)
-        self.renderer_list.pack_start(cell, True)
-        self.renderer_list.set_cell_data_func(cellpb, self.make_pb)
-	self.renderer_list.add_attribute(cell, 'text', 0)
-	self.renderer_list.get_model().append(["Media Players", gtk.STOCK_OPEN, None])
-        self.renderer_list.set_active(0)        
+
+        self.renderer_list.append_text_column(liststore, False)
+        col1 = self.renderer_list.get_column(0)
+        col1.pack_start(cellpb)
+
+        col1.set_cell_data_func(cellpb, self.make_pb)
+
+        self.renderer_list.set_active(0, 0)
         self.renderer_list.connect("changed", self.renderer_changed)
 
-        self.top_bar.pack_start(self.source_list)
-        self.top_bar.pack_start(self.renderer_list)
+
+        self.select_source = hildon.PickerButton(0, 0)
+        self.select_source.set_title("Select Source")
+        self.select_source.set_selector(self.source_list)
+        self.select_source.show()
+
+        self.select_renderer = hildon.PickerButton(0, 0)
+        self.select_renderer.set_title("Select Player")
+        self.select_renderer.set_selector(self.renderer_list)
+        self.select_renderer.show()
+        
+        
+        self.top_bar.pack_start(self.select_source)
+        self.top_bar.pack_start(self.select_renderer)
         self.source_list.show()
         self.renderer_list.show()
         self.top_bar.show()
@@ -182,7 +205,7 @@ class PyGUPnPCPUI(object):
     def init_main_bar(self):
         self.main_bar = gtk.HBox(homogeneous=True)
 
-        self.source_browser_win = gtk.ScrolledWindow()
+        self.source_browser_win = hildon.PannableArea()
 
         tree_model = gtk.ListStore(str)
         self.source_browser = gtk.TreeView(tree_model)
@@ -220,9 +243,12 @@ class PyGUPnPCPUI(object):
         self.renderers = []
         self.items = []
         self.source_device = None
+        self.renderer_device = None
         self.stack = []
+
+        program = hildon.Program.get_instance()
         
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = hildon.StackableWindow()
         self.window.connect("delete_event", self.delete_event)
         self.window.connect("destroy", self.destroy)
         self.window.set_border_width(10)
