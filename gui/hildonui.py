@@ -64,7 +64,8 @@ class ZhaanUI(object):
     def clear_source_browser(self):
         self.source_browser.get_model().clear()
         self.items = []
-        self.add_source_item(None, "..")
+        if len(self.stack) != 0:
+            self.add_source_item(None, "..")
         
     def add_container(self, container):
         self.add_source_item(container, "(+) %s" % container.get_title())
