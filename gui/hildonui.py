@@ -17,21 +17,29 @@ class ZhaanUI(object):
         gtk.main_quit()
 
     def source_changed(self, box, index):
-        active = self.source_list.get_active(0)
-
         if not self.sources: # Selected nothing
             return
 
+        # Prevent a Critical Glib warning by not calling get_active
+        # when the tree is technically empty
+        if len(self.sources) == 1:
+            active = 0
+        else:        
+            active = self.source_list.get_active(0)
+        
         self.stack = []
         self.source_device = self.sources[active]
         self.select_source.set_title(self.source_device.get_friendly_name())
         self.upnp.load_children(self.source_device)
 
     def renderer_changed(self, box, index):
-        active = self.renderer_list.get_active(0)
-
         if not self.renderers: # Selected nothing
             return
+
+        if len(self.renderers) == 1:
+            active = 0
+        else:
+            active = self.renderer_list.get_active(0)
         
         self.renderer_device = self.renderers[active]
         self.select_renderer.set_title(
