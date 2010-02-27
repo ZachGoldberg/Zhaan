@@ -63,13 +63,13 @@ class PyGUPnPCP(object):
   def device_available(self, manager, device):
     if device.is_source:
       self.ui.add_source(device, device.icon_file)
-    elif device.is_renderer:
+    if device.is_renderer:
       self.ui.add_renderer(device, device.icon_file)
 
   def device_unavailable(self, manager, device):
     if device.is_source:
       self.ui.remove_source(device)
-    elif device.is_renderer:
+    if device.is_renderer:
       self.ui.remove_renderer(device)
 
 
