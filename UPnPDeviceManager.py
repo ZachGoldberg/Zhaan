@@ -102,12 +102,13 @@ class UPnPDeviceManager(GObject.GObject):
       self.ctx_mgr = GUPnP.ContextManager.new(self.main_ctx, 0)
       self.ctx_mgr.connect("context_available", self.new_ctx)
 
+      self.new_ctx(self.ctx_mgr, GUPnP.Context(interface="eth0"))
+
   def cleanup_files(self):
     for i in self.created_files:
       os.unlink(i)
 
   def new_ctx(self, ctx_mgr, ctx):
-      print "NEW CTX" * 10
       self.contexts.append(ctx)
 
       # Bind to the context in the maincontext on any port
@@ -146,7 +147,8 @@ class UPnPDeviceManager(GObject.GObject):
           return
          
     self.devices.append(device)
-  
+
+    
     (icon_url, _, _, _, _) = device.get_icon_url(None, 32, 22, 22, False)
     device.icon_file = None
     if icon_url:

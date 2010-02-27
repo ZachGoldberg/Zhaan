@@ -136,7 +136,6 @@ class Playlist(gobject.GObject):
         # -------
 
         self.playlist_control = gtk.HBox()
-        self.playlist.pack_start(self.playlist_control, False, padding=3)
 
         self.pl_up_button = self.new_button("Up")
         self.playlist_control.pack_start(self.pl_up_button, True)

@@ -19,22 +19,24 @@ class ZhaanUI(object):
     def source_changed(self, box, index):
         active = self.source_list.get_active(0)
 
-        if active < 0: # Selected nothing
+        if active < 0 or not self.sources: # Selected nothing
             return
-        
+
         self.stack = []
         self.source_device = self.sources[active]
         self.select_source.set_title(self.source_device.get_friendly_name())
         self.upnp.load_children(self.source_device)
 
     def renderer_changed(self, box, index):
-        active = self.renderer_list.get_active()
+        active = self.renderer_list.get_active(0)
 
-        if active < 0: # Selected nothing
+        if active < 0 or not self.renderers: # Selected nothing
             return
         
         self.renderer_device = self.renderers[active]
-
+        self.select_renderer.set_title(
+            self.renderer_device.get_friendly_name())
+        
     def enqueue_or_dive(self, tree, col_loc, col):
         item = self.items[col_loc[0]]
         if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):
@@ -63,25 +65,46 @@ class ZhaanUI(object):
         self.add_source_item(object, object.get_title())
         
     def add_renderer(self, device, icon_file):
-        self.icons[device.get_udn()] = icon_file
-        self.renderer_list.get_model().append([device.get_model_name(), gtk.STOCK_OPEN, device])
         self.renderers.append(device)
-        if len(self.renderers) == 1:
-            self.renderer_list.set_active(1)
 
-    def add_source(self, device, icon_file):
+        if len(self.renderers) == 1:
+            model = self.renderer_list.get_model(0)
+            iter = model.get_iter(0)
+            while iter and model.iter_is_valid(iter):
+                model.remove(iter)
+                break
+
         self.icons[device.get_udn()] = icon_file
-        self.source_list.get_model().append([device.get_friendly_name(), gtk.STOCK_OPEN, device])
+        self.renderer_list.get_model(0).append(
+            [device.get_friendly_name(), gtk.STOCK_OPEN, device])
+
+        if len(self.renderers) == 1:
+            self.renderer_list.set_active(0, 1)
+
         
+    def add_source(self, device, icon_file):
         self.sources.append(device)
         if len(self.sources) == 1:
-            self.source_list.set_active(1)
+            model =  self.source_list.get_model(0)
+            iter = model.get_iter(0)
+            while iter and model.iter_is_valid(iter):            
+                model.remove(iter)
+                break
+
+        self.icons[device.get_udn()] = icon_file
+        self.source_list.get_model(0).append([device.get_friendly_name(), gtk.STOCK_OPEN, device])
+        
+
+        if len(self.sources) == 1:
+            self.source_list.set_active(0, 1)
     
     def remove_renderer(self, device):
-        self.remove_device(device, self.renderers, self.renderer_device, self.renderer_list)
+        self.remove_device(device, self.renderers,
+                           self.renderer_device, self.renderer_list)
         
     def remove_source(self, device):
-        self.remove_device(device, self.sources, self.source_device, self.source_list)
+        self.remove_device(device, self.sources,
+                           self.source_device, self.source_list)
       
 
     def remove_device(self, device, cache_list, cache_item, ui_list):
@@ -94,7 +117,7 @@ class ZhaanUI(object):
                     else:
                         ui_list.set_active(0)
 
-        model = ui_list.get_model()
+        model = ui_list.get_model(0)
         iter =  model.get_iter(0)
         while iter and model.iter_is_valid(iter):
             iter = model.iter_next(iter)
@@ -181,6 +204,13 @@ class ZhaanUI(object):
 
         self.renderer_list.set_active(0, 0)
         self.renderer_list.connect("changed", self.renderer_changed)
+
+        
+        self.source_list.get_model(0).append(
+            ["No Available Media Sources", None, None])
+
+        self.renderer_list.get_model(0).append(
+            ["No Available Media Players", None, None])
 
 
         self.select_source = hildon.PickerButton(0, 0)
