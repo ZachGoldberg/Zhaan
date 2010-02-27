@@ -121,10 +121,12 @@ class PyGUPnPCP(object):
     """
     Ends the action and loads the data
     """
-
+    self.ui.end_progress_indicator()
+    
     out_data = {"Result": "", "NumberReturned": "", "TotalMatches": "", "UpdateID": ""}
 
     success, return_data = service.end_action_hash(action, out_data)
+
     if not success:
       print "Browse Node Action Failed"
 
@@ -143,8 +145,9 @@ class PyGUPnPCP(object):
     The UI will call this and then continue.  The calback for the
     async browse function will populate the UI
     """
+    self.ui.begin_progress_indicator()
+
     serv = self.device_mgr.is_source(device)
-  
     assert serv
 
     in_data = {"ObjectID": object_id, "BrowseFlag": "BrowseDirectChildren",

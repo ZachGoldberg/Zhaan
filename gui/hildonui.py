@@ -56,8 +56,17 @@ class ZhaanUI(object):
             if len(self.stack) > 0:
                 self.upnp.load_children(self.source_device, 
                                         self.stack.pop())
+
+
+    def begin_progress_indicator(self):
+        hildon.hildon_gtk_window_set_progress_indicator(self.window, 1)
+
+
+    def end_progress_indicator(self):
+        hildon.hildon_gtk_window_set_progress_indicator(self.window, 0)
+
             
-    def add_source_item(self, item, txt):
+    def add_source_item(self, item, txt):          
         self.items.append(item)
         self.source_browser.get_model().append([txt])
 
@@ -108,6 +117,7 @@ class ZhaanUI(object):
             self.source_list.set_active(0, 1)
     
     def remove_renderer(self, device):
+        print "remove renderer"
         self.remove_device(device, self.renderers,
                            self.renderer_device, self.renderer_list)
         
@@ -122,9 +132,9 @@ class ZhaanUI(object):
                 cache_list.remove(d)
                 if d.get_udn() == cache_item.get_udn():
                     if len(cache_list) > 1:
-                        ui_list.set_active(1)
+                        ui_list.set_active(0, 1)
                     else:
-                        ui_list.set_active(0)
+                        ui_list.set_active(0, 0)
 
         model = ui_list.get_model(0)
         iter =  model.get_iter(0)
@@ -305,6 +315,15 @@ class ZhaanUI(object):
         self.window.add(self.vbox)
         self.window.show()
         self.vbox.show()
+
+        clear_button = hildon.Button(0, 0, "Clear Playlist")
+        clear_button.connect("clicked", self.playlist.clear)
+        
+        menu = hildon.AppMenu()
+        menu.append(clear_button)
+        menu.show_all()
+
+        self.window.set_app_menu(menu)
 
     def main(self):
         gtk.main()

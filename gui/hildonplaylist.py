@@ -31,6 +31,11 @@ class Playlist(gobject.GObject):
         # selected item and its display text
         return item, ""
 
+    def clear(self, button=None):
+        self.items = []
+        self.playlist_box.get_model().clear()
+        
+        
     def play(self, button):
         self.emit("play", self.get_selected_item()[0])
     
