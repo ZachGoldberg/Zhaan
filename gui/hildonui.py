@@ -19,7 +19,7 @@ class ZhaanUI(object):
     def source_changed(self, box, index):
         active = self.source_list.get_active(0)
 
-        if active < 0 or not self.sources: # Selected nothing
+        if not self.sources: # Selected nothing
             return
 
         self.stack = []
@@ -30,7 +30,7 @@ class ZhaanUI(object):
     def renderer_changed(self, box, index):
         active = self.renderer_list.get_active(0)
 
-        if active < 0 or not self.renderers: # Selected nothing
+        if not self.renderers: # Selected nothing
             return
         
         self.renderer_device = self.renderers[active]
@@ -133,7 +133,7 @@ class ZhaanUI(object):
 
         if device and self.icons[device.get_udn()]:
             pb = gtk.gdk.pixbuf_new_from_file(self.icons[device.get_udn()])
-            pb = pb.scale_simple(22, 22, gtk.gdk.INTERP_HYPER)
+            pb = pb.scale_simple(44, 44, gtk.gdk.INTERP_HYPER)
         else:
             pb = self.source_list.render_icon(stock, gtk.ICON_SIZE_MENU, None)
 
@@ -172,7 +172,7 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def init_top_bar(self):
-        self.top_bar = gtk.HBox()
+        self.top_bar = gtk.HBox(True)
 	
         liststore = gtk.ListStore(str, str, object)
         self.source_list = hildon.TouchSelector()
@@ -236,9 +236,13 @@ class ZhaanUI(object):
         self.main_bar = gtk.HBox(homogeneous=True)
 
         self.source_browser_win = hildon.PannableArea()
-
+        self.source_browser_win.set_property("mov-mode",
+                                         hildon.MOVEMENT_MODE_BOTH)
+        
         tree_model = gtk.ListStore(str)
         self.source_browser = gtk.TreeView(tree_model)
+        self.source_browser.set_reorderable(True)
+        
         col = gtk.TreeViewColumn("Media Items in this Source")
         col.cell = gtk.CellRendererText()
         col.pack_start(col.cell)
@@ -247,6 +251,7 @@ class ZhaanUI(object):
         self.source_browser.connect("row-activated", self.enqueue_or_dive)
         self.source_browser_win.add(self.source_browser)
         self.source_browser_win.show()
+        
         # -------
         # Main bar packing / cleanup
         # -------
@@ -275,10 +280,10 @@ class ZhaanUI(object):
         self.source_device = None
         self.renderer_device = None
         self.stack = []
-
-        program = hildon.Program.get_instance()
         
         self.window = hildon.StackableWindow()
+        self.window.set_title("Zhaan Control Point")
+        
         self.window.connect("delete_event", self.delete_event)
         self.window.connect("destroy", self.destroy)
         self.window.set_border_width(10)

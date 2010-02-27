@@ -120,8 +120,13 @@ class Playlist(gobject.GObject):
         # -------
 
         self.playlist_win = hildon.PannableArea()
+        self.playlist_win.set_property("mov-mode", hildon.MOVEMENT_MODE_BOTH)
+        
         tree_model2 = gtk.ListStore(str)
         self.playlist_box = gtk.TreeView(tree_model2)
+        
+        self.playlist_box.set_reorderable(True)
+        
         col2 = gtk.TreeViewColumn("Playlist")
         col2.cell = gtk.CellRendererText()
         col2.pack_start(col2.cell)
@@ -152,7 +157,7 @@ class Playlist(gobject.GObject):
         self.pl_rm_button.connect("clicked", self.rm)
         self.pl_rm_button.show()
 
-        self.playlist.pack_start(self.playlist_control, False, padding=3)
+        #self.playlist.pack_start(self.playlist_control, False, padding=3)
         self.playlist_control.show()
                                    
         self.playlist.show()        

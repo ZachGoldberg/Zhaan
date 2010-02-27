@@ -12,8 +12,6 @@ class DIDLParser(object):
     self.containers = []
     self.objects = []
 
-    print xml_data
-
     parser = GUPnPAV.GUPnPDIDLLiteParser()
     parser.connect("container_available", self.new_container)
     parser.connect("item_available", self.new_item)
