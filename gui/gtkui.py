@@ -107,8 +107,8 @@ class ZhaanUI(object):
 
     def make_pb(self, col, cell, model, iter):
         stock = model.get_value(iter, 1)
-	if not stock:
-	    return
+        if not stock:
+            return
 
         device = model.get_value(iter, 2)
 
@@ -126,7 +126,7 @@ class ZhaanUI(object):
             print "Missing either source or destination device"
             return
 
-	if item:
+        if item:
           print "Begin playing %s" % item.get_title()
 
         self.playing_item = item
@@ -146,29 +146,29 @@ class ZhaanUI(object):
 
     def init_top_bar(self):
         self.top_bar = gtk.HBox()
-	
+        
         liststore = gtk.ListStore(str, str, object)
         self.source_list = gtk.ComboBox(liststore)
         cellpb = gtk.CellRendererPixbuf()
-	cell = gtk.CellRendererText()
+        cell = gtk.CellRendererText()
         self.source_list.pack_start(cellpb, False)
         self.source_list.pack_start(cell, True)
 
         self.source_list.set_cell_data_func(cellpb, self.make_pb)
-	self.source_list.add_attribute(cell, 'text', 0)
-	self.source_list.get_model().append(["Media Sources", gtk.STOCK_OPEN, None])
+        self.source_list.add_attribute(cell, 'text', 0)
+        self.source_list.get_model().append(["Media Sources", gtk.STOCK_OPEN, None])
         self.source_list.set_active(0)
         self.source_list.connect("changed", self.source_changed)
 
         liststore = gtk.ListStore(str, str, object)
         self.renderer_list = gtk.ComboBox(liststore)
         cellpb = gtk.CellRendererPixbuf()
-	cell = gtk.CellRendererText()
+        cell = gtk.CellRendererText()
         self.renderer_list.pack_start(cellpb, False)
         self.renderer_list.pack_start(cell, True)
         self.renderer_list.set_cell_data_func(cellpb, self.make_pb)
-	self.renderer_list.add_attribute(cell, 'text', 0)
-	self.renderer_list.get_model().append(["Media Players", gtk.STOCK_OPEN, None])
+        self.renderer_list.add_attribute(cell, 'text', 0)
+        self.renderer_list.get_model().append(["Media Players", gtk.STOCK_OPEN, None])
         self.renderer_list.set_active(0)        
         self.renderer_list.connect("changed", self.renderer_changed)
 

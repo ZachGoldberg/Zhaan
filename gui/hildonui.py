@@ -126,8 +126,8 @@ class ZhaanUI(object):
 
     def make_pb(self, col, cell, model, iter):
         stock = model.get_value(iter, 1)
-	if not stock:
-	    return
+        if not stock:
+            return
 
         device = model.get_value(iter, 2)
 
@@ -145,7 +145,7 @@ class ZhaanUI(object):
             print "Missing either source or destination device"
             return
 
-	if item:
+        if item:
           print "Begin playing %s" % item.get_title()
 
         self.playing_item = item
@@ -173,12 +173,12 @@ class ZhaanUI(object):
 
     def init_top_bar(self):
         self.top_bar = gtk.HBox(True)
-	
+        
         liststore = gtk.ListStore(str, str, object)
         self.source_list = hildon.TouchSelector()
         
         cellpb = gtk.CellRendererPixbuf()
-	cell = gtk.CellRendererText()
+        cell = gtk.CellRendererText()
 
         self.source_list.append_text_column(liststore, False)
         col1 = self.source_list.get_column(0)
@@ -194,7 +194,7 @@ class ZhaanUI(object):
         self.renderer_list = hildon.TouchSelector()
         
         cellpb = gtk.CellRendererPixbuf()
-	cell = gtk.CellRendererText()
+        cell = gtk.CellRendererText()
 
         self.renderer_list.append_text_column(liststore, False)
         col1 = self.renderer_list.get_column(0)

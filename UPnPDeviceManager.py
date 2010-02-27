@@ -142,7 +142,7 @@ class UPnPDeviceManager(GObject.GObject):
 
   def device_available(self, cp, device):
     for d in self.devices:
-	if d.get_udn() == device.get_udn():
+        if d.get_udn() == device.get_udn():
           print "Duplicate device online?  Ignoring new entity."
           return
          
