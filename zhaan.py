@@ -153,8 +153,11 @@ class PyGUPnPCP(object):
     self.ui.begin_progress_indicator()
 
     serv = self.device_mgr.is_source(device)
-    assert serv
 
+    # It's possible this is a stale device or other problems
+    if not serv:
+      return
+    
     in_data = {"ObjectID": object_id, "BrowseFlag": "BrowseDirectChildren",
                "Filter": "*", "StartingIndex": "0", "RequestCount": "0",
                "SortCriteria": ""}
