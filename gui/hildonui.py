@@ -117,7 +117,6 @@ class ZhaanUI(object):
             self.source_list.set_active(0, 1)
     
     def remove_renderer(self, device):
-        print "remove renderer"
         self.remove_device(device, self.renderers,
                            self.renderer_device, self.renderer_list)
         

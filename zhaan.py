@@ -94,6 +94,11 @@ class PyGUPnPCP(object):
     uri = ""
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
 
+    if not av_serv:
+      print "Renderer is invalid?"
+      self.ui.remove_renderer(renderer)
+      return
+
     if resources:
       uri = resources[0].get_uri()
       data = {"InstanceID": "0", "CurrentURI": uri, "CurrentURIMetaData": uri} 
