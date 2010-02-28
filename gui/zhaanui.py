@@ -96,7 +96,7 @@ class ZhaanUI(object):
                         try:
                             ui_list.set_active(0)
                         except:
-                            pass
+                            ui_list.set_active(0, 0)
 
         try:
             model = ui_list.get_model()
