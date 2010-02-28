@@ -76,6 +76,7 @@ class GTKZhaanUI(ZhaanUI):
         self.source_browser.connect("row-activated", self.enqueue_or_dive)
         self.source_browser_win.add(self.source_browser)
         self.source_browser_win.show()
+        
         # -------
         # Main bar packing / cleanup
         # -------

@@ -87,18 +87,29 @@ class ZhaanUI(object):
             if d.get_udn() == device.get_udn():
                 cache_list.remove(d)
                 if d.get_udn() == cache_item.get_udn():
-                    if len(cache_list) > 1:
-                        ui_list.set_active(1)
+                    if len(cache_list) > 1:                        
+                        try:
+                            ui_list.set_active(1)
+                        except:
+                            ui_list.set_active(0, 1)
                     else:
-                        ui_list.set_active(0)
+                        try:
+                            ui_list.set_active(0)
+                        except:
+                            pass
 
-        model = ui_list.get_model()
+        try:
+            model = ui_list.get_model()
+        except:
+            model = ui_list.get_model(0)
+            
         iter =  model.get_iter(0)
         while iter and model.iter_is_valid(iter):
-            iter = model.iter_next(iter)
-            if iter and model.get_value(iter, 2).get_udn() == device.get_udn():
+            dev = model.get_value(iter, 2)
+            if dev and dev.get_udn() == device.get_udn():
                 model.remove(iter)
-
+            iter = model.iter_next(iter)
+            
 
     def make_pb(self, col, cell, model, iter):
         stock = model.get_value(iter, 1)
