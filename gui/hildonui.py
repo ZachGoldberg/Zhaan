@@ -13,6 +13,28 @@ class HildonZhaanUI(ZhaanUI):
     def end_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 0)
                            
+    def remove_source(self, device):
+        super(HildonZhaanUI, self).remove_source(device)
+        
+        if len(self.renderers) == 0:
+            self.setup_default_source()
+
+    def remove_renderer(self, device):
+        super(HildonZhaanUI, self).remove_renderer(device)
+        
+        if len(self.renderers) == 0:
+            self.setup_default_renderer()
+
+    def setup_default_source(self):
+        self.source_list.get_model(0).append(
+            ["No Available Media Sources", None, None])
+        self.select_source.set_active(0)
+        
+    def setup_default_renderer(self):        
+        self.renderer_list.get_model(0).append(
+            ["No Available Media Players", None, None])
+        self.select_renderer.set_active(0)
+        
     def add_renderer(self, device, icon_file):
         self.renderers.append(device)
 
@@ -22,14 +44,13 @@ class HildonZhaanUI(ZhaanUI):
             while iter and model.iter_is_valid(iter):
                 model.remove(iter)
                 break
-asd
+
         self.icons[device.get_udn()] = icon_file
         self.renderer_list.get_model(0).append(
             [device.get_friendly_name(), gtk.STOCK_OPEN, device])
 
         if len(self.renderers) == 1:
-            self.renderer_list.set_active(0, 1)
-
+            self.select_renderer.set_active(0)
         
     def add_source(self, device, icon_file):
         self.sources.append(device)
@@ -45,8 +66,7 @@ asd
         
 
         if len(self.sources) == 1:
-            self.source_list.set_active(0, 1)    
-
+            self.select_source.set_active(0)
 
     def init_top_bar(self):
         self.top_bar = gtk.HBox(True)
@@ -60,7 +80,7 @@ asd
         self.source_list.append_text_column(liststore, False)
         col1 = self.source_list.get_column(0)
         col1.pack_start(cellpb)
-
+        col1.set_property("text-column", False)
         col1.set_cell_data_func(cellpb, self.make_pb)        
 
         self.source_list.set_active(0, 0)
@@ -72,33 +92,26 @@ asd
         
         cellpb = gtk.CellRendererPixbuf()
         cell = gtk.CellRendererText()
-
         self.renderer_list.append_text_column(liststore, False)
         col1 = self.renderer_list.get_column(0)
+        col1.set_property("text-column", False)
         col1.pack_start(cellpb)
 
         col1.set_cell_data_func(cellpb, self.make_pb)
 
         self.renderer_list.set_active(0, 0)
         self.renderer_list.connect("changed", self.renderer_changed)
-        
-        self.source_list.get_model(0).append(
-            ["No Available Media Sources", None, None])
-
-        self.renderer_list.get_model(0).append(
-            ["No Available Media Players", None, None])
-
 
         self.select_source = hildon.PickerButton(0, 0)
-        self.select_source.set_title("Select Source")
-        self.select_source.set_selector(self.source_list)
+        self.select_source.set_selector(self.source_list)               
         self.select_source.show()
-
+        
         self.select_renderer = hildon.PickerButton(0, 0)
-        self.select_renderer.set_title("Select Player")
         self.select_renderer.set_selector(self.renderer_list)
         self.select_renderer.show()
         
+        self.setup_default_source()
+        self.setup_default_renderer()
         
         self.top_bar.pack_start(self.select_source)
         self.top_bar.pack_start(self.select_renderer)

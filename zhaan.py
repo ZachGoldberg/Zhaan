@@ -1,6 +1,6 @@
 from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject, libsoup
 import os, urllib2, tempfile, atexit
-import pygtk, gtk
+import pygtk, gtk, sys
 
 from action import UPnPAction
 
@@ -45,14 +45,14 @@ class PyGUPnPCP(object):
     # Determine which kind of UI to use based on whats available
     try:
       import hildon
-      from gui.hildonui import ZhaanUI
+      from gui.hildonui import HildonZhaanUI as ZhaanUI
     except:      
       pass
 
     if not "ZhaanUI" in dir():
       try:
         import gtk
-        from gui.gtkui import ZhaanUI
+        from gui.gtkui import GTKZhaanUI as ZhaanUI
       except:
         sys.stderr.write("Could not find hildon or gtk.")
         sys.exit(1)

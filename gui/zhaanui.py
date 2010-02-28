@@ -63,10 +63,7 @@ class ZhaanUI(object):
         self.source_device = self.sources[active]
         self.upnp.load_children(self.source_device)
 
-        if hasattr(self, "select_source"):
-            self.select_source.set_title(self.source_device.get_friendly_name())
-
-    def renderer_changed(self, box, index):
+    def renderer_changed(self, box, index=None):
         if not self.renderers: # Selected nothing
             return
 
@@ -76,9 +73,6 @@ class ZhaanUI(object):
             active = self.renderer_list.get_active(0)
         
         self.renderer_device = self.renderers[active]
-        if hasattr(self, "select_renderer"):
-            self.select_renderer.set_title(
-                self.renderer_device.get_friendly_name())
 
     def remove_renderer(self, device):
         self.remove_device(device, self.renderers,
