@@ -167,8 +167,10 @@ class PyGUPnPCP(object):
                                           "BrowseFlag",
                                           "Filter",
                                           "StartingIndex",
-                                          "RequestCount"],
+                                          "RequestedCount",
+                                          "SortCriteria"],
                                          [GObject.TYPE_STRING,
+                                          GObject.TYPE_STRING,
                                           GObject.TYPE_STRING,
                                           GObject.TYPE_STRING,
                                           GObject.TYPE_STRING,
@@ -178,6 +180,7 @@ class PyGUPnPCP(object):
                                           "*",
                                           "0",
                                           "0",
+                                          "",
                                           ""],
                                          self.children_loaded, None)
   
