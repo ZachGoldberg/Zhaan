@@ -3,85 +3,16 @@ import gtk, hildon, gobject
 from gi.repository import GUPnP, GUPnPAV
 
 from gui.hildonplaylist import Playlist
+from gui.zhaanui import ZhaanUI
 
-class ZhaanUI(object):
-    def hello(self, widget, data=None):
-        print "Hello World"
-
-    def delete_event(self, widget, event, data=None):
-        print "delete event occurred"
-        return False
-
-    def destroy(self, widget, data=None):
-        print "destroy signal occurred"
-        gtk.main_quit()
-
-    def source_changed(self, box, index):
-        if not self.sources: # Selected nothing
-            return
-
-        # Prevent a Critical Glib warning by not calling get_active
-        # when the tree is technically empty
-        if len(self.sources) == 1:
-            active = 0
-        else:        
-            active = self.source_list.get_active(0)
-        
-        self.stack = []
-        self.source_device = self.sources[active]
-        self.select_source.set_title(self.source_device.get_friendly_name())
-        self.upnp.load_children(self.source_device)
-
-    def renderer_changed(self, box, index):
-        if not self.renderers: # Selected nothing
-            return
-
-        if len(self.renderers) == 1:
-            active = 0
-        else:
-            active = self.renderer_list.get_active(0)
-        
-        self.renderer_device = self.renderers[active]
-        self.select_renderer.set_title(
-            self.renderer_device.get_friendly_name())
-        
-    def enqueue_or_dive(self, tree, col_loc, col):
-        item = self.items[col_loc[0]]
-        if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):
-            self.stack.append(item.get_parent_id())
-            self.upnp.load_children(self.source_device, item.get_id())
-        elif isinstance(item, GUPnPAV.GUPnPDIDLLiteItem):
-            self.playlist.add(item, item.get_title())
-        else:
-            if len(self.stack) > 0:
-                self.upnp.load_children(self.source_device, 
-                                        self.stack.pop())
-
+class HildonZhaanUI(ZhaanUI):        
 
     def begin_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 1)
 
-
     def end_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 0)
-
-            
-    def add_source_item(self, item, txt):          
-        self.items.append(item)
-        self.source_browser.get_model().append([txt])
-
-    def clear_source_browser(self):
-        self.source_browser.get_model().clear()
-        self.items = []
-        if len(self.stack) != 0:
-            self.add_source_item(None, "..")
-        
-    def add_container(self, container):
-        self.add_source_item(container, "(+) %s" % container.get_title())
-
-    def add_object(self, object):
-        self.add_source_item(object, object.get_title())
-        
+                           
     def add_renderer(self, device, icon_file):
         self.renderers.append(device)
 
@@ -91,7 +22,7 @@ class ZhaanUI(object):
             while iter and model.iter_is_valid(iter):
                 model.remove(iter)
                 break
-
+asd
         self.icons[device.get_udn()] = icon_file
         self.renderer_list.get_model(0).append(
             [device.get_friendly_name(), gtk.STOCK_OPEN, device])
@@ -114,80 +45,8 @@ class ZhaanUI(object):
         
 
         if len(self.sources) == 1:
-            self.source_list.set_active(0, 1)
-    
-    def remove_renderer(self, device):
-        self.remove_device(device, self.renderers,
-                           self.renderer_device, self.renderer_list)
-        
-    def remove_source(self, device):
-        self.remove_device(device, self.sources,
-                           self.source_device, self.source_list)
-      
+            self.source_list.set_active(0, 1)    
 
-    def remove_device(self, device, cache_list, cache_item, ui_list):
-        for d in cache_list:
-            if d.get_udn() == device.get_udn():
-                cache_list.remove(d)
-                if d.get_udn() == cache_item.get_udn():
-                    if len(cache_list) > 1:
-                        ui_list.set_active(0, 1)
-                    else:
-                        ui_list.set_active(0, 0)
-
-        model = ui_list.get_model(0)
-        iter =  model.get_iter(0)
-        while iter and model.iter_is_valid(iter):
-            iter = model.iter_next(iter)
-            if iter and model.get_value(iter, 2).get_udn() == device.get_udn():
-                model.remove(iter)
-
-    def make_pb(self, col, cell, model, iter):
-        stock = model.get_value(iter, 1)
-        if not stock:
-            return
-
-        device = model.get_value(iter, 2)
-
-        if device and self.icons[device.get_udn()]:
-            pb = gtk.gdk.pixbuf_new_from_file(self.icons[device.get_udn()])
-            pb = pb.scale_simple(44, 44, gtk.gdk.INTERP_HYPER)
-        else:
-            pb = self.source_list.render_icon(stock, gtk.ICON_SIZE_MENU, None)
-
-        cell.set_property('pixbuf', pb)
-        return
-
-    def play(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
-            return
-
-        if item:
-          print "Begin playing %s" % item.get_title()
-
-        self.playing_item = item
-        self.upnp.play_object(self.source_device,
-                              self.renderer_device,
-                              item)
-        
-    def stop(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
-            return
-
-        self.upnp.stop_object(self.source_device,
-                              self.renderer_device,
-                              self.playing_item)
-
-    def pause(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
-            return
-
-        self.upnp.pause_object(self.source_device,
-                              self.renderer_device,
-                              self.playing_item)
 
     def init_top_bar(self):
         self.top_bar = gtk.HBox(True)
@@ -222,7 +81,6 @@ class ZhaanUI(object):
 
         self.renderer_list.set_active(0, 0)
         self.renderer_list.connect("changed", self.renderer_changed)
-
         
         self.source_list.get_model(0).append(
             ["No Available Media Sources", None, None])
@@ -288,22 +146,11 @@ class ZhaanUI(object):
         return self.main_bar
 
     def __init__(self, upnp_backend):
-        self.upnp = upnp_backend
-
-        self.playing_item = None
-        self.sources = []
-        self.icons = {}
-        self.renderers = []
-        self.items = []
-        self.source_device = None
-        self.renderer_device = None
-        self.stack = []
+        super(HildonZhaanUI, self).__init__(upnp_backend)
         
         self.window = hildon.StackableWindow()
         self.window.set_title("Zhaan Control Point")
-        
-        self.window.connect("delete_event", self.delete_event)
-        self.window.connect("destroy", self.destroy)
+
         self.window.set_border_width(10)
         self.window.set_default_size(800,480)
 
