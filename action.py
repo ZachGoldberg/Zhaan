@@ -36,12 +36,10 @@ class UPnPAction(object):
 
     def execute(self):
         if self.is_executable():
-            print "Send action"
             try:
                 self.service.send_action_hash(str(self.action), self.data, {})
             except:
                 print "Error sending action"
-            print "Send action done"
         else:
             print "Error -- Tried to execute an action that hasn't been activated"
 

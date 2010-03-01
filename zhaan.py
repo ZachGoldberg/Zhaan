@@ -1,6 +1,6 @@
 from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject, libsoup
 import os, urllib2, tempfile, atexit
-import pygtk, gtk, sys
+import pygtk, gtk, sys, time
 
 from action import UPnPAction
 
@@ -15,7 +15,10 @@ class DIDLParser(object):
     parser = GUPnPAV.GUPnPDIDLLiteParser()
     parser.connect("container_available", self.new_container)
     parser.connect("item_available", self.new_item)
-    parser.parse_didl(xml_data)
+    try:
+      parser.parse_didl(xml_data)
+    except:
+      pass
         
   def new_item(self, node, object):
     self.objects.append(object)
@@ -56,9 +59,33 @@ class PyGUPnPCP(object):
       except:
         sys.stderr.write("Could not find hildon or gtk.")
         sys.exit(1)
+
+
+    GObject.timeout_add(1000, self.update_renderer_status)
       
     self.ui = ZhaanUI(self)
     self.ui.main()
+
+
+  def update_renderer_status(self):
+    for device in self.ui.renderers:
+      serv = self.device_mgr.is_renderer(device)
+
+      def loaded(service, action, data):
+        out_data = {"CurrentTransportState": "", "CurrentTransportStatus": "",
+                    "CurrentSpeed": ""}
+
+        success, return_data = service.end_action_hash(action, out_data)
+        self.ui.update_renderer_status(data, return_data["CurrentTransportState"])
+                    
+      return_data = serv.begin_action_list("GetTransportInfo",
+                                           ["InstanceID"],
+                                           [GObject.TYPE_STRING],
+                                           ["0"],
+                                           loaded, device)
+
+           
+    return True
 
   def device_available(self, manager, device):
     if device.is_source:
@@ -79,12 +106,10 @@ class PyGUPnPCP(object):
     av_serv.send_action_hash("Stop", data, {})
 
   def pause_object(self, source, renderer, item):
-    print "Sending Pause"
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     data = {"InstanceID": 0}
-    print "Pre action"
     av_serv.send_action_hash("Pause", data, {})
-    print "post action"
+
     
   def play_object(self, source, renderer, item):
     resources = None
@@ -112,7 +137,6 @@ class PyGUPnPCP(object):
     else:
       print "No Resources for item?"
 
-    print "Sending action..."
     data = {"InstanceID": "0", "CurrentURI": uri, "CurrentURIMetaData": uri, "Speed": 1} 
     act = UPnPAction(renderer,
                      av_serv,
@@ -158,10 +182,6 @@ class PyGUPnPCP(object):
     if not serv:
       return
     
-    in_data = {"ObjectID": object_id, "BrowseFlag": "BrowseDirectChildren",
-               "Filter": "*", "StartingIndex": "0", "RequestCount": "0",
-               "SortCriteria": ""}
-
     return_data = serv.begin_action_list("Browse",
                                          ["ObjectID",
                                           "BrowseFlag",
