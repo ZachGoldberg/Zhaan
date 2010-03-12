@@ -177,9 +177,13 @@ class HildonZhaanUI(ZhaanUI):
 
         clear_button = hildon.Button(0, 0, "Clear Playlist")
         clear_button.connect("clicked", self.playlist.clear)
-        
+
+        controller_button = hildon.Button(0, 0, "Play Control")
+        controller_button.connect("clicked", self.change_to_controller)
+
         menu = hildon.AppMenu()
         menu.append(clear_button)
+        menu.append(controller_button)
         menu.show_all()
 
         self.window.set_app_menu(menu)

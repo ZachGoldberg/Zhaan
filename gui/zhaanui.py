@@ -2,7 +2,6 @@ import gtk
 from gi.repository import GUPnPAV
 
 class ZhaanUI(object):
-
     def __init__(self, upnp_backend):
         self.upnp = upnp_backend
         
