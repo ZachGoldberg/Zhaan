@@ -8,7 +8,12 @@ from gui.zhaanui import ZhaanUI
 from gui.gtkplaylist import Playlist
 
 class GTKZhaanUI(ZhaanUI):
-                
+    def remove_source(self, device):
+        super(GTKZhaanUI, self).remove_source(device)
+        
+        if len(self.sources) == 0:
+            self.source_browser.get_model().clear()
+  
     def add_renderer(self, device, icon_file):
         self.icons[device.get_udn()] = icon_file
         self.renderer_list.get_model().append([device.get_model_name(), gtk.STOCK_OPEN, device])

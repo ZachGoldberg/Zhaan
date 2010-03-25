@@ -31,6 +31,9 @@ class ZhaanUI(object):
     def end_progress_indicator(self):
         pass
 
+    def update_renderer_status(self, device, state):
+        pass
+
     def add_container(self, container):
         self.add_source_item(container, "(+) %s" % container.get_title())
 
@@ -95,7 +98,7 @@ class ZhaanUI(object):
                         try:
                             ui_list.set_active(0)
                         except:
-                            pass
+                            ui_list.set_active(0, 0)
 
         try:
             model = ui_list.get_model()

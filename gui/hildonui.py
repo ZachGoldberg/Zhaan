@@ -13,11 +13,28 @@ class HildonZhaanUI(ZhaanUI):
     def end_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 0)
                            
+    def update_renderer_status(self, device, state):
+        if device.get_udn() == self.renderer_device.get_udn():
+            device_state = ""
+            if "pause" in state.lower():
+                device_state = "Paused"
+            elif "play" in state.lower():
+                device_state = "Playing"
+
+            if device_state:
+                self.window.set_title("Zhaan - %s (%s)" % (device.get_model_name(),
+                                                           device_state))
+
+    def renderer_changed(self, box, index=None):
+        super(HildonZhaanUI, self).renderer_changed(box, index)
+        self.window.set_title("Zhaan Control Point")
+        
     def remove_source(self, device):
         super(HildonZhaanUI, self).remove_source(device)
         
-        if len(self.renderers) == 0:
+        if len(self.sources) == 0:
             self.setup_default_source()
+            self.source_browser.get_model().clear()
 
     def remove_renderer(self, device):
         super(HildonZhaanUI, self).remove_renderer(device)

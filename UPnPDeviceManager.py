@@ -198,7 +198,6 @@ class UPnPDeviceManager(GObject.GObject):
       if d.get_udn() == device.get_udn():
         self.renderers.remove(d)
 
-    self.device_services[d.get_udn()] = []
     self.emit("device-unavailable", original)
 
   def server_introspection(self, service, introspection, error, userdata):
