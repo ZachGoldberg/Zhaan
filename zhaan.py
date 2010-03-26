@@ -1,4 +1,4 @@
-from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject, libsoup
+from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject
 import os, urllib2, tempfile, atexit
 import pygtk, gtk, sys, time
 
@@ -113,6 +113,30 @@ class PyGUPnPCP(object):
       self.ui.remove_renderer(device)
 
 
+  def get_renderer_status(self, renderer):
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+    if not av_serv:
+      return {}
+    
+    out_keys = ["Track",
+                "TrackDuration",
+                "TrackMetaData",
+                "TrackURI",
+                "RelTime",               
+                "AbsTime"]
+    out_types = [GObject.TYPE_STRING for i in range(5)]
+    in_keys = ["InstanceID"]
+
+    result, data = av_serv.send_action_list("GetPositionInfo", in_keys,
+                                            [GObject.TYPE_STRING],
+                                            ["0"],
+                                            out_keys,
+                                            out_types)
+    if not result or not data:
+      return {}
+
+    return dict(zip(out_keys, data))
+    
   def stop_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     av_serv.send_action_list("Stop", ["InstanceID"], [GObject.TYPE_STRING],

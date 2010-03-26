@@ -175,6 +175,36 @@ class HildonZhaanUI(ZhaanUI):
 
         return self.main_bar
 
+
+    def change_to_controller(self, button):
+        self.controller_win = hildon.StackableWindow()
+
+        self.controller_win.set_title("Control - %s" %
+                                      self.renderer_device.get_friendly_name())
+
+        """
+        GetPositionInfo
+        In -> InstanceID 0
+        Out
+        Track
+        TrackDuration
+        TrackMetaData
+        TrackURI
+        RelTime
+        AbsTime
+        """
+
+        progress = gtk.HScale()
+        progress.show()
+        
+        progress.set_range(0, 100)
+        
+        self.controller_win.add(progress)
+        print self.upnp.get_renderer_status(self.renderer_device)
+        import pdb
+        pdb.set_trace()
+        self.controller_win.show()                  
+
     def __init__(self, upnp_backend):
         super(HildonZhaanUI, self).__init__(upnp_backend)
         
