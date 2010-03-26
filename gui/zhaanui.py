@@ -59,7 +59,12 @@ class ZhaanUI(object):
         if len(self.sources) == 1:
             active = 0
         else:        
-            active = self.source_list.get_active(0)
+	    try:
+               active = self.source_list.get_active()
+               if active > 0: # Account for the title entry
+		 active -= 1
+	    except:
+               active = self.source_list.get_active(0)
         
         self.stack = []
         self.source_device = self.sources[active]
@@ -72,7 +77,12 @@ class ZhaanUI(object):
         if len(self.renderers) == 1:
             active = 0
         else:
-            active = self.renderer_list.get_active(0)
+	    try:
+               active = self.renderer_list.get_active()
+               if active > 0: # Account for the title entry
+		 active -= 1
+	    except:
+               active = self.renderer_list.get_active(0)
         
         self.renderer_device = self.renderers[active]
 
