@@ -74,8 +74,18 @@ class PyGUPnPCP(object):
       def loaded(service, action, data):
         out_data = {"CurrentTransportState": "", "CurrentTransportStatus": "",
                     "CurrentSpeed": ""}
+	keys = ["CurrentTransportState",
+		"CurrentTransportStatus",
+		"CurrentSpeed"]
+        success, return_data = service.end_action_list(action, keys,
+								[GObject.TYPE_STRING,
+								 GObject.TYPE_STRING,
+								 GObject.TYPE_STRING]
+								)
+							
 
-        success, return_data = service.end_action_hash(action, out_data)
+	if return_data:
+		return_data = dict(zip(keys, return_data))
         self.ui.update_renderer_status(data, return_data["CurrentTransportState"])
                     
       return_data = serv.begin_action_list("GetTransportInfo",
@@ -94,6 +104,9 @@ class PyGUPnPCP(object):
       self.ui.add_renderer(device, device.icon_file)
 
   def device_unavailable(self, manager, device):
+    if not device:
+	return
+
     if device.is_source:
       self.ui.remove_source(device)
     if device.is_renderer:
@@ -102,13 +115,14 @@ class PyGUPnPCP(object):
 
   def stop_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    data = {"InstanceID": 0}
-    av_serv.send_action_hash("Stop", data, {})
+    av_serv.send_action_list("Stop", ["InstanceID"], [GObject.TYPE_STRING],
+                             ["0"], [], [])
+
 
   def pause_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    data = {"InstanceID": 0}
-    av_serv.send_action_hash("Pause", data, {})
+    av_serv.send_action_list("Pause", ["InstanceID"], [GObject.TYPE_STRING],
+                             ["0"], [], [])
 
     
   def play_object(self, source, renderer, item):
@@ -151,13 +165,20 @@ class PyGUPnPCP(object):
     Ends the action and loads the data
     """
     self.ui.end_progress_indicator()
-    
-    out_data = {"Result": "", "NumberReturned": "", "TotalMatches": "", "UpdateID": ""}
+    print "loaded"
+    keys = ["Result", "NumberReturned", "TotalMatches", "UpdateID"]
 
-    success, return_data = service.end_action_hash(action, out_data)
+    success, return_data = service.end_action_list(action, keys,
+							   [GObject.TYPE_STRING,
+							    GObject.TYPE_STRING,
+							    GObject.TYPE_STRING,
+							    GObject.TYPE_STRING])
+
+    return_data = dict(zip(keys, return_data))
 
     if not success:
       print "Browse Node Action Failed"
+      return
 
     parser = DIDLParser(return_data["Result"])
 
