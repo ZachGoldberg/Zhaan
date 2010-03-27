@@ -1,4 +1,4 @@
-import gtk
+import gtk, time
 from gi.repository import GUPnPAV
 
 class ZhaanUI(object):
@@ -196,6 +196,11 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def seek(self, abs_time):
+        if hasattr(self, "last_seek_time"):
+            if time.time() - self.last_seek_time < 0.5:
+                return
+            
+        self.last_seek_time = time.time()
         self.upnp.seek_object(self.source_device,
                               self.renderer_device,
                               self.playing_item,

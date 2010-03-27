@@ -232,6 +232,10 @@ class HildonZhaanUI(ZhaanUI):
         self.progress.connect("change-value", self.seek_media)
         
         playlist = Playlist()
+        try:
+            playlist.build_signals()
+        except:
+            pass
         playlist.connect("play", self.play)
         playlist.connect("pause", self.pause)
         playlist.connect("stop", self.stop)
