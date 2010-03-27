@@ -139,6 +139,13 @@ class ZhaanUI(object):
         cell.set_property('pixbuf', pb)
         return
 
+    def time_to_int(self, time):
+        (hour, min, sec) = time.split(":")
+        return (int(hour) * 3600) + (int(min) * 60) + int(sec)
+
+    def int_to_time(self, range, timevalue):
+        return "%.2d:%.2d" % (int(timevalue / 60), timevalue % 60)
+
     def play(self, playlist, item):
         if not self.source_device or not self.renderer_device:
             print "Missing either source or destination device"
@@ -169,3 +176,27 @@ class ZhaanUI(object):
         self.upnp.pause_object(self.source_device,
                               self.renderer_device,
                               self.playing_item)
+
+    def prev(self, playlist, item):
+        if not self.source_device or not self.renderer_device:
+            print "Missing either source or destination device"
+            return
+
+        self.upnp.prev_object(self.source_device,
+                              self.renderer_device,
+                              self.playing_item)
+
+    def next(self, playlist, item):
+        if not self.source_device or not self.renderer_device:
+            print "Missing either source or destination device"
+            return
+
+        self.upnp.next_object(self.source_device,
+                              self.renderer_device,
+                              self.playing_item)
+
+    def seek(self, abs_time):
+        self.upnp.seek_object(self.source_device,
+                              self.renderer_device,
+                              self.playing_item,
+                              abs_time)

@@ -9,7 +9,7 @@ class Playlist(gobject.GObject):
         self.items = []
         super(Playlist, self).__init__()
 
-        
+    def build_signals(self):
         gobject.signal_new("play", Playlist, gobject.SIGNAL_RUN_LAST, 
                           gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
 

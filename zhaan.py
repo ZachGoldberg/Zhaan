@@ -124,7 +124,8 @@ class PyGUPnPCP(object):
                 "TrackURI",
                 "RelTime",               
                 "AbsTime"]
-    out_types = [GObject.TYPE_STRING for i in range(5)]
+    
+    out_types = [GObject.TYPE_STRING for i in range(6)]
     in_keys = ["InstanceID"]
 
     result, data = av_serv.send_action_list("GetPositionInfo", in_keys,
@@ -134,9 +135,18 @@ class PyGUPnPCP(object):
                                             out_types)
     if not result or not data:
       return {}
-
-    return dict(zip(out_keys, data))
     
+    data = dict(zip(out_keys, data))
+
+    if data.get("TrackMetaData"):
+      parser = DIDLParser(data["TrackMetaData"])
+      if parser.objects:
+        data["TrackMetaData"] = parser.objects[0]
+      else:
+        del data["TrackMetaData"]
+
+    return data
+      
   def stop_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     av_serv.send_action_list("Stop", ["InstanceID"], [GObject.TYPE_STRING],
@@ -147,6 +157,23 @@ class PyGUPnPCP(object):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     av_serv.send_action_list("Pause", ["InstanceID"], [GObject.TYPE_STRING],
                              ["0"], [], [])
+
+  def prev_object(self, source, renderer, item):
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+    av_serv.send_action_list("Previous", ["InstanceID"], [GObject.TYPE_STRING],
+                             ["0"], [], [])
+
+  def next_object(self, source, renderer, item):
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+    av_serv.send_action_list("Next", ["InstanceID"], [GObject.TYPE_STRING],
+                             ["0"], [], [])
+
+
+  def seek_object(self, source, renderer, item, abs_time):
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+    av_serv.send_action_list("Seek", ["InstanceID", "Unit", "Target"],
+                             [GObject.TYPE_STRING for i in range(3)],
+                             ["0", "ABS_TIME", abs_time], [], [])
 
     
   def play_object(self, source, renderer, item):

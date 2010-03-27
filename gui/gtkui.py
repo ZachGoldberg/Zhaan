@@ -86,7 +86,7 @@ class GTKZhaanUI(ZhaanUI):
         # Main bar packing / cleanup
         # -------
         self.playlist = Playlist()
-
+        self.playlist.build_signals()
         self.playlist.connect("play", self.play)
         self.playlist.connect("pause", self.pause)
         self.playlist.connect("stop", self.stop)

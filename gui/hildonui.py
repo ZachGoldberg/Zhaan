@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import gtk, hildon, gobject
-from gi.repository import GUPnP, GUPnPAV
+from gi.repository import GUPnP, GUPnPAV, GObject
 
 from gui.hildonplaylist import Playlist
 from gui.zhaanui import ZhaanUI
@@ -162,7 +162,7 @@ class HildonZhaanUI(ZhaanUI):
         # Main bar packing / cleanup
         # -------
         self.playlist = Playlist()
-
+        self.playlist.build_signals()
         self.playlist.connect("play", self.play)
         self.playlist.connect("pause", self.pause)
         self.playlist.connect("stop", self.stop)
@@ -176,34 +176,80 @@ class HildonZhaanUI(ZhaanUI):
         return self.main_bar
 
 
+    def pull_renderer_status(self):
+        if self.stop_controller:
+            return False
+        
+        progress_data = self.upnp.get_renderer_status(self.renderer_device)
+        
+        trackdata = {}
+        if progress_data["TrackMetaData"]:
+            metadata = progress_data["TrackMetaData"].props
+            trackdata = {
+                "title": metadata.title,
+                "album": metadata.album,
+                "artist": metadata.artist,
+                "track_number": metadata.track_number,
+                "genre": metadata.genre,
+                "description": metadata.description,
+                }
+        
+        self.track.set_text(trackdata.get("title", "Unknown Title"))
+
+        self.album.set_text("%s From %s" % (trackdata.get("artist", "Unknown Artist"),
+                                            trackdata.get("album", "Unknown Album")))
+        
+        maxv = float(self.time_to_int(progress_data["TrackDuration"]))
+        self.progress.set_range(0, maxv)        
+        self.progress.set_value(float(self.time_to_int(progress_data["RelTime"])))        
+
+        return True
+
+    def delete_controller(self, window):
+        self.stop_controller = True
+
+    def seek_media(self, range, scroll, value):
+        self.seek("00:" + self.int_to_time(None, value))
+    
     def change_to_controller(self, button):
+        self.stop_controller = False
         self.controller_win = hildon.StackableWindow()
 
         self.controller_win.set_title("Control - %s" %
                                       self.renderer_device.get_friendly_name())
 
-        """
-        GetPositionInfo
-        In -> InstanceID 0
-        Out
-        Track
-        TrackDuration
-        TrackMetaData
-        TrackURI
-        RelTime
-        AbsTime
-        """
+        self.controller_win.connect("destroy", self.delete_controller)
 
-        progress = gtk.HScale()
-        progress.show()
+        self.track = gtk.Label("Loading...")        
+        self.track.show()
+
+        self.album = gtk.Label()
+        self.album.show()        
+                         
+        self.progress = gtk.HScale()
+        self.progress.show()
+        self.progress.connect("format-value", self.int_to_time)
+        self.progress.connect("change-value", self.seek_media)
         
-        progress.set_range(0, 100)
+        playlist = Playlist()
+        playlist.connect("play", self.play)
+        playlist.connect("pause", self.pause)
+        playlist.connect("stop", self.stop)
+        playlist.connect("prev", self.prev)
+        playlist.connect("next", self.next)
         
-        self.controller_win.add(progress)
-        print self.upnp.get_renderer_status(self.renderer_device)
-        import pdb
-        pdb.set_trace()
-        self.controller_win.show()                  
+        box = gtk.VBox(homogeneous=False)
+        box.add(self.track)
+        box.add(self.album)
+        box.add(self.progress)
+        box.add(playlist.build_control_box())
+        box.show()
+
+        self.controller_win.add(box)
+        self.controller_win.show()                
+
+        GObject.timeout_add(1000, self.pull_renderer_status)
+        self.pull_renderer_status()
 
     def __init__(self, upnp_backend):
         super(HildonZhaanUI, self).__init__(upnp_backend)

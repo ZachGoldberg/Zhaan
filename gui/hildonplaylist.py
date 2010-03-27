@@ -6,10 +6,10 @@ class Playlist(gobject.GObject):
         self.playlist = None
         self.items = []
         super(Playlist, self).__init__()
-
         
+    def build_signals(self):
         gobject.signal_new("play", Playlist, gobject.SIGNAL_RUN_LAST, 
-                          gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
+                           gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
 
         gobject.signal_new("pause", Playlist, gobject.SIGNAL_RUN_LAST, 
                           gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
@@ -17,8 +17,17 @@ class Playlist(gobject.GObject):
         gobject.signal_new("stop", Playlist, gobject.SIGNAL_RUN_LAST, 
                           gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
 
+        gobject.signal_new("next", Playlist, gobject.SIGNAL_RUN_LAST, 
+                          gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
+
+        gobject.signal_new("prev", Playlist, gobject.SIGNAL_RUN_LAST, 
+                          gobject.TYPE_BOOLEAN, (gobject.TYPE_PYOBJECT,))
+
     def get_selected_item(self):
-        selection = self.playlist_box.get_selection().get_selected_rows()
+        if not hasattr(self, "playlist_box"):
+            return [None]
+        
+        selection = self.playlist_box.get_selection().get_selected_rows()        
         model = self.playlist_box.get_model()
         iter = model.get_iter_first()
         if not iter:
@@ -44,7 +53,13 @@ class Playlist(gobject.GObject):
     
     def stop(self, button):
         self.emit("stop", self.get_selected_item()[0])
-    
+
+    def prev(self, button):
+        self.emit("prev", self.get_selected_item()[0])
+
+    def next(self, button):
+        self.emit("next", self.get_selected_item()[0])
+
     def up(self, button):
         store, selection = self.playlist_box.get_selection().get_selected_rows()
         model, selected_row_iter = self.playlist_box.get_selection().get_selected()
@@ -90,6 +105,48 @@ class Playlist(gobject.GObject):
                                          gtk.HILDON_SIZE_FINGER_HEIGHT,
                                          hildon.BUTTON_ARRANGEMENT_VERTICAL,
                                          title)
+
+    def build_control_box(self):
+        if self.playlist:
+            return self.playlist
+
+        self.playlist = gtk.VBox()
+
+        # -------
+        # Play Control
+        # -------
+
+        self.control_box = gtk.HBox()
+        self.play_button = self.new_button("Play")
+        self.control_box.pack_start(self.play_button, True)
+        self.play_button.connect("clicked", self.play)
+        self.play_button.show()
+
+        self.pause_button = self.new_button("Pause")
+        self.control_box.pack_start(self.pause_button, True)
+        self.pause_button.connect("clicked", self.pause)
+        self.pause_button.show()
+
+        self.stop_button = self.new_button("Stop")
+        self.control_box.pack_start(self.stop_button, True)
+        self.stop_button.connect("clicked", self.stop)
+        self.stop_button.show()
+
+        self.prev_button = self.new_button("Previous")
+        self.control_box.pack_start(self.prev_button, True)
+        self.prev_button.connect("clicked", self.prev)
+        self.prev_button.show()
+
+        self.next_button = self.new_button("Next")
+        self.control_box.pack_start(self.next_button, True)
+        self.next_button.connect("clicked", self.next)
+        self.next_button.show()
+
+        self.playlist.pack_start(self.control_box, False)
+        self.control_box.show()
+
+        self.playlist.show()        
+        return self.playlist
 
     def build_ui(self):
         if self.playlist:
