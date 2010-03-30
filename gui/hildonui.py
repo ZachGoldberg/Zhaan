@@ -20,8 +20,11 @@ class HildonZhaanUI(ZhaanUI):
                 device_state = "Paused"
             elif "play" in state.lower():
                 device_state = "Playing"
+            elif "stop" in state.lower():
+                device_state = "Stoppted"
 
             if device_state:
+                self.device_state = device_state
                 self.window.set_title("Zhaan - %s (%s)" % (device.get_model_name(),
                                                            device_state))
 
@@ -194,7 +197,9 @@ class HildonZhaanUI(ZhaanUI):
                 "description": metadata.description,
                 }
         
-        self.track.set_text(trackdata.get("title", "Unknown Title"))
+        self.track.set_text("(%s) %s " % (
+                self.device_state, 
+                trackdata.get("title", "Unknown Title")))
 
         self.album.set_text("%s From %s" % (trackdata.get("artist", "Unknown Artist"),
                                             trackdata.get("album", "Unknown Album")))
