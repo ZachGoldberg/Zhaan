@@ -120,6 +120,7 @@ class ZhaanUI(object):
             dev = model.get_value(iter, 2)
             if dev and dev.get_udn() == device.get_udn():
                 model.remove(iter)
+                break
             iter = model.iter_next(iter)
             
 

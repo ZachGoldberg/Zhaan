@@ -1,3 +1,5 @@
+import pygtk
+pygtk.require('2.0')
 from gi.repository import GLib, GUPnP, GUPnPAV, GSSDP, GObject
 import os, urllib2, tempfile, atexit
 import pygtk, gtk, sys, time
