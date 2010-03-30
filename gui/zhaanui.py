@@ -146,6 +146,16 @@ class ZhaanUI(object):
     def int_to_time(self, range, timevalue):
         return "%.2d:%.2d" % (int(timevalue / 60), timevalue % 60)
 
+    def play_no_item(self, playlist, item):
+        if not self.renderer_device:
+            print "Missing Renderer"
+            return
+
+        self.upnp.play(self.source_device,
+                       self.renderer_device,
+                       item)
+
+    
     def play(self, playlist, item):
         if not self.source_device or not self.renderer_device:
             print "Missing either source or destination device"
@@ -160,8 +170,8 @@ class ZhaanUI(object):
                               item)
         
     def stop(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
+        if not self.renderer_device:
+            print "Missing Renderer"
             return
 
         self.upnp.stop_object(self.source_device,
@@ -169,8 +179,8 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def pause(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
+        if  not self.renderer_device:
+            print "Missing Renderer"
             return
 
         self.upnp.pause_object(self.source_device,
@@ -178,8 +188,8 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def prev(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
+        if not self.renderer_device:
+            print "Missing Renderer"
             return
 
         self.upnp.prev_object(self.source_device,
@@ -187,8 +197,8 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def next(self, playlist, item):
-        if not self.source_device or not self.renderer_device:
-            print "Missing either source or destination device"
+        if not self.renderer_device:
+            print "Missing Renderer"
             return
 
         self.upnp.next_object(self.source_device,

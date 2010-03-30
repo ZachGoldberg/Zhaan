@@ -136,8 +136,6 @@ class PyGUPnPCP(object):
     if not result or not data:
       return {}
 
-    print data
-    
     data = dict(zip(out_keys, data))
 
     if data.get("TrackMetaData"):
@@ -218,12 +216,29 @@ class PyGUPnPCP(object):
     act.register_device_manager(self.device_mgr)
     act.execute()
 
+  def play(self, source, renderer, item):
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+
+    if not av_serv:
+      print "Renderer is invalid?"
+      self.ui.remove_renderer(renderer)
+      return
+
+    data = {"InstanceID": "0", "CurrentURI": uri,
+            "CurrentURIMetaData": uri, "Speed": 1} 
+    act = UPnPAction(renderer,
+                     av_serv,
+                     "Play",
+                     data)
+
+    act.register_device_manager(self.device_mgr)
+    act.execute()
+
   def children_loaded(self, service, action, data):
     """
     Ends the action and loads the data
     """
     self.ui.end_progress_indicator()
-    print "loaded"
     keys = ["Result", "NumberReturned", "TotalMatches", "UpdateID"]
 
     success, return_data = service.end_action_list(action, keys,
