@@ -183,7 +183,7 @@ class HildonZhaanUI(ZhaanUI):
         progress_data = self.upnp.get_renderer_status(self.renderer_device)
         
         trackdata = {}
-        if progress_data["TrackMetaData"]:
+        if "TrackMetaData" in progress_data and progress_data["TrackMetaData"]:
             metadata = progress_data["TrackMetaData"].props
             trackdata = {
                 "title": metadata.title,

@@ -135,12 +135,19 @@ class PyGUPnPCP(object):
                                             out_types)
     if not result or not data:
       return {}
+
+    print data
     
     data = dict(zip(out_keys, data))
 
     if data.get("TrackMetaData"):
-      parser = DIDLParser(data["TrackMetaData"])
-      if parser.objects:
+      parser = None
+      try:
+        parser = DIDLParser(data["TrackMetaData"])
+      except:
+        pass
+        
+      if parser and parser.objects:
         data["TrackMetaData"] = parser.objects[0]
       else:
         del data["TrackMetaData"]
