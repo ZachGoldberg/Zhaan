@@ -272,7 +272,6 @@ class PyGUPnPCP(object):
                                           "*",
                                           "0",
                                           "0",
-                                          "",
                                           ""],
                                          self.children_loaded, None)
   
