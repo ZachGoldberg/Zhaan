@@ -141,8 +141,11 @@ class ZhaanUI(object):
         return
 
     def time_to_int(self, time):
-        (hour, min, sec) = time.split(":")
-        return (int(hour) * 3600) + (int(min) * 60) + int(sec)
+        try:
+          (hour, min, sec) = time.split(":")
+          return (int(hour) * 3600) + (int(min) * 60) + int(sec)
+        except:
+          return 0
 
     def int_to_time(self, range, timevalue):
         return "%.2d:%.2d" % (int(timevalue / 60), timevalue % 60)
@@ -207,11 +210,6 @@ class ZhaanUI(object):
                               self.playing_item)
 
     def seek(self, abs_time):
-        if hasattr(self, "last_seek_time"):
-            if time.time() - self.last_seek_time < 0.5:
-                return
-            
-        self.last_seek_time = time.time()
         self.upnp.seek_object(self.source_device,
                               self.renderer_device,
                               self.playing_item,

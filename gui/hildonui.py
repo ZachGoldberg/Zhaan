@@ -205,17 +205,24 @@ class HildonZhaanUI(ZhaanUI):
                                             trackdata.get("album", "Unknown Album")))
         
         maxv = float(self.time_to_int(progress_data["TrackDuration"]))
-        self.progress.set_range(0, maxv)        
+        self.progress.set_range(0, maxv)
+        self.progress.ignore_seek = True
         self.progress.set_value(float(self.time_to_int(progress_data["RelTime"])))        
+
+        self.progress.ignore_seek = False
 
         return True
 
     def delete_controller(self, window):
         self.stop_controller = True
 
-    def seek_media(self, range, scroll, value):
-        self.seek("00:" + self.int_to_time(None, value))
+    def seek_media(self, scale):
+        if not self.progress.ignore_seek:
+            self.seek("00:" + self.int_to_time(None, scale.get_value()))
     
+    def change_volume(self, scale):
+        print "Volume: ", scale.get_value()
+
     def change_to_controller(self, button):
         self.stop_controller = False
         self.controller_win = hildon.StackableWindow()
@@ -231,10 +238,19 @@ class HildonZhaanUI(ZhaanUI):
         self.album = gtk.Label()
         self.album.show()        
                          
+
+        self.volume_control = gtk.VScale()
+        self.volume_control.set_range(-100, 0)
+        self.volume_control.set_update_policy(gtk.UPDATE_DELAYED)
+        self.volume_control.show()
+        self.volume_control.connect("value-changed", self.change_volume)
+        self.volume_control.connect("format-value", lambda x,y: abs(int(y)))
+
         self.progress = gtk.HScale()
+        self.progress.set_update_policy(gtk.UPDATE_DELAYED)
         self.progress.show()
         self.progress.connect("format-value", self.int_to_time)
-        self.progress.connect("change-value", self.seek_media)
+        self.progress.connect("value-changed", self.seek_media)
         
         playlist = Playlist()
         try:
@@ -247,14 +263,22 @@ class HildonZhaanUI(ZhaanUI):
         playlist.connect("prev", self.prev)
         playlist.connect("next", self.next)
         
-        box = gtk.VBox(homogeneous=False)
-        box.add(self.track)
-        box.add(self.album)
-        box.add(self.progress)
-        box.add(playlist.build_control_box())
-        box.show()
 
-        self.controller_win.add(box)
+        controlbox = gtk.HBox()
+
+        main = gtk.VBox()
+        
+        main.add(self.track)
+        main.add(self.album)
+        main.add(self.progress)
+        main.add(playlist.build_control_box())
+        main.show()
+        
+        controlbox.add(self.volume_control)
+        controlbox.add(main)
+        controlbox.show()
+
+        self.controller_win.add(controlbox)
         self.controller_win.show()                
 
         GObject.timeout_add(1000, self.pull_renderer_status)
