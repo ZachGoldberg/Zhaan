@@ -185,7 +185,7 @@ class HildonZhaanUI(ZhaanUI):
         
         try:
             progress_data = self.upnp.get_renderer_status(self.renderer_device)
-            #volume_data   = self.upnp.get_volume(self.renderer_device)
+            volume_data   = self.upnp.get_volume(self.renderer_device)
         except:
             return
 

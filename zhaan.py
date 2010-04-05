@@ -74,22 +74,27 @@ class PyGUPnPCP(object):
       serv = self.device_mgr.is_renderer(device)
 
       def loaded(service, action, data):
-        out_data = {"CurrentTransportState": "", "CurrentTransportStatus": "",
-                    "CurrentSpeed": ""}
 	keys = ["CurrentTransportState",
 		"CurrentTransportStatus",
 		"CurrentSpeed"]
-        success, return_data = service.end_action_list(action, keys,
-								[GObject.TYPE_STRING,
-								 GObject.TYPE_STRING,
-								 GObject.TYPE_STRING]
-								)
+        
+        try:
+          success, return_data = service.end_action_list(action, keys,
+                                                         [GObject.TYPE_STRING,
+                                                          GObject.TYPE_STRING,
+                                                          GObject.TYPE_STRING]
+                                                         )
+        except:
+          return
 							
 
 	if return_data:
 		return_data = dict(zip(keys, return_data))
-        self.ui.update_renderer_status(data, return_data["CurrentTransportState"])
-                    
+
+                self.ui.update_renderer_status(
+                  data,
+                  return_data["CurrentTransportState"])
+                
       return_data = serv.begin_action_list("GetTransportInfo",
                                            ["InstanceID"],
                                            ["0"],
@@ -113,6 +118,24 @@ class PyGUPnPCP(object):
     if device.is_renderer:
       self.ui.remove_renderer(device)
 
+
+  def get_volume(self, renderer):
+    control = self.device_mgr.get_service_on_device(renderer, 
+                                                    "RenderingControl")
+
+    if not control:
+      return
+
+    
+    result, data = control.send_action_list("GetVolume", ["InstanceID",
+                                                          "Channel"],
+                                            ["0", "Master"],
+                                            ["ChannelVolume"],
+                                            [GObject.TYPE_STRING]
+                                            )
+
+    print result, data
+    
 
   def get_renderer_status(self, renderer):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
@@ -241,10 +264,10 @@ class PyGUPnPCP(object):
     keys = ["Result", "NumberReturned", "TotalMatches", "UpdateID"]
 
     success, return_data = service.end_action_list(action, keys,
-							   [GObject.TYPE_STRING,
-							    GObject.TYPE_STRING,
-							    GObject.TYPE_STRING,
-							    GObject.TYPE_STRING])
+                                                   [GObject.TYPE_STRING,
+                                                    GObject.TYPE_STRING,
+                                                    GObject.TYPE_STRING,
+                                                    GObject.TYPE_STRING])
 
     return_data = dict(zip(keys, return_data))
 
