@@ -183,8 +183,12 @@ class HildonZhaanUI(ZhaanUI):
         if self.stop_controller:
             return False
         
-        progress_data = self.upnp.get_renderer_status(self.renderer_device)
-        
+        try:
+            progress_data = self.upnp.get_renderer_status(self.renderer_device)
+            #volume_data   = self.upnp.get_volume(self.renderer_device)
+        except:
+            return
+
         trackdata = {}
         if "TrackMetaData" in progress_data and progress_data["TrackMetaData"]:
             metadata = progress_data["TrackMetaData"].props
