@@ -38,12 +38,8 @@ class UPnPAction(object):
     def execute(self):
         if self.is_executable():
             try:
-		types = []
-		for i in range(len(self.data.keys())):
-			types.append(GObject.TYPE_STRING)
                 self.service.send_action_list(str(self.action),
                                                self.data.keys(),
-                                               types,
                                                [str(s) for s in self.data.values()],
                                                [], [])
             except:

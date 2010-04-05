@@ -92,7 +92,6 @@ class PyGUPnPCP(object):
                     
       return_data = serv.begin_action_list("GetTransportInfo",
                                            ["InstanceID"],
-                                           [GObject.TYPE_STRING],
                                            ["0"],
                                            loaded, device)
 
@@ -131,7 +130,6 @@ class PyGUPnPCP(object):
     in_keys = ["InstanceID"]
 
     result, data = av_serv.send_action_list("GetPositionInfo", in_keys,
-                                            [GObject.TYPE_STRING],
                                             ["0"],
                                             out_keys,
                                             out_types)
@@ -156,30 +154,29 @@ class PyGUPnPCP(object):
       
   def stop_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    av_serv.send_action_list("Stop", ["InstanceID"], [GObject.TYPE_STRING],
+    av_serv.send_action_list("Stop", ["InstanceID"],
                              ["0"], [], [])
 
 
   def pause_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    av_serv.send_action_list("Pause", ["InstanceID"], [GObject.TYPE_STRING],
+    av_serv.send_action_list("Pause", ["InstanceID"],
                              ["0"], [], [])
 
   def prev_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    av_serv.send_action_list("Previous", ["InstanceID"], [GObject.TYPE_STRING],
+    av_serv.send_action_list("Previous", ["InstanceID"],
                              ["0"], [], [])
 
   def next_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
-    av_serv.send_action_list("Next", ["InstanceID"], [GObject.TYPE_STRING],
+    av_serv.send_action_list("Next", ["InstanceID"],
                              ["0"], [], [])
 
 
   def seek_object(self, source, renderer, item, abs_time):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     av_serv.send_action_list("Seek", ["InstanceID", "Unit", "Target"],
-                             [GObject.TYPE_STRING for i in range(3)],
                              ["0", "ABS_TIME", abs_time], [], [])
 
     
@@ -285,12 +282,6 @@ class PyGUPnPCP(object):
                                           "StartingIndex",
                                           "RequestedCount",
                                           "SortCriteria"],
-                                         [GObject.TYPE_STRING,
-                                          GObject.TYPE_STRING,
-                                          GObject.TYPE_STRING,
-                                          GObject.TYPE_STRING,
-                                          GObject.TYPE_STRING,
-                                          GObject.TYPE_STRING],
                                          [str(object_id),
                                           "BrowseDirectChildren",
                                           "*",
