@@ -119,13 +119,25 @@ class PyGUPnPCP(object):
       self.ui.remove_renderer(device)
 
 
+  def set_volume(self, renderer, volume):
+    control = self.device_mgr.get_service_on_device(renderer, 
+                                                    "RenderingControl")
+
+    if not control:
+      return
+    
+    result, data = control.send_action_list("SetVolume", ["InstanceID",
+                                                          "Channel",
+                                                          "DesiredVolume"],
+                                            ["0", "Master", str(volume)],
+                                            [], [])
+
   def get_volume(self, renderer):
     control = self.device_mgr.get_service_on_device(renderer, 
                                                     "RenderingControl")
 
     if not control:
       return
-
     
     result, data = control.send_action_list("GetVolume", ["InstanceID",
                                                           "Channel"],
@@ -133,8 +145,10 @@ class PyGUPnPCP(object):
                                             ["ChannelVolume"],
                                             [GObject.TYPE_STRING]
                                             )
+    if result and data:
+      return data[0]
 
-    print result, data
+    return 0
     
 
   def get_renderer_status(self, renderer):

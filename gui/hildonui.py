@@ -211,8 +211,9 @@ class HildonZhaanUI(ZhaanUI):
         maxv = float(self.time_to_int(progress_data["TrackDuration"]))
         self.progress.set_range(0, maxv)
         self.progress.ignore_seek = True
-        self.progress.set_value(float(self.time_to_int(progress_data["RelTime"])))        
-
+        self.progress.set_value(
+            float(self.time_to_int(progress_data["RelTime"])))
+        self.volume_control.set_value(float(volume_data) * -1)
         self.progress.ignore_seek = False
 
         return True
@@ -225,7 +226,10 @@ class HildonZhaanUI(ZhaanUI):
             self.seek("00:" + self.int_to_time(None, scale.get_value()))
     
     def change_volume(self, scale):
-        print "Volume: ", scale.get_value()
+        if not self.progress.ignore_seek:
+            volume = int(scale.get_value() * -1)
+            print "Volume: ", volume
+            self.set_volume(volume)
 
     def change_to_controller(self, button):
         self.stop_controller = False

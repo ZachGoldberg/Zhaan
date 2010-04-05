@@ -214,3 +214,7 @@ class ZhaanUI(object):
                               self.renderer_device,
                               self.playing_item,
                               abs_time)
+
+    def set_volume(self, volume):
+        self.upnp.set_volume(self.renderer_device,
+                             volume)
