@@ -87,6 +87,10 @@ class ZhaanUI(object):
         self.renderer_device = self.renderers[active]
 
     def remove_renderer(self, device):
+        if device.get_udn() == self.renderer_device.get_udn():
+          if getattr(self, "in_control_window", False):
+            self.leave_control_window()
+
         self.remove_device(device, self.renderers,
                            self.renderer_device, self.renderer_list)
         

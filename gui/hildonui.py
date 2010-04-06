@@ -231,9 +231,14 @@ class HildonZhaanUI(ZhaanUI):
             print "Volume: ", volume
             self.set_volume(volume)
 
+    def leave_control_window(self):
+        self.controller_win.destroy()
+        self.in_control_window = False
+
     def change_to_controller(self, button):
         self.stop_controller = False
         self.controller_win = hildon.StackableWindow()
+        self.in_control_window = True
 
         self.controller_win.set_title("Control - %s" %
                                       self.renderer_device.get_friendly_name())
