@@ -126,11 +126,14 @@ class PyGUPnPCP(object):
     if not control:
       return
     
-    result, data = control.send_action_list("SetVolume", ["InstanceID",
-                                                          "Channel",
-                                                          "DesiredVolume"],
-                                            ["0", "Master", str(volume)],
-                                            [], [])
+    try:
+      result, data = control.send_action_list("SetVolume", ["InstanceID",
+                                                            "Channel",
+                                                            "DesiredVolume"],
+                                                           ["0", "Master", str(volume)],
+                                                           [], [])
+    except:
+      pass # Maybe show something in the UI?
 
   def get_volume(self, renderer):
     control = self.device_mgr.get_service_on_device(renderer, 
