@@ -1,3 +1,4 @@
+Implement Search
 Make all UI intiiated options async.  UI currently locks up if actions take too long.
 Break out self.source_list, self.renderer_list into their own classes
 Update gtkui with new features of hildonui
