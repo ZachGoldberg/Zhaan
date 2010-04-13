@@ -197,7 +197,7 @@ class PyGUPnPCP(object):
   def seek_object(self, source, renderer, item, abs_time):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
     av_serv.send_action_list("Seek", ["InstanceID", "Unit", "Target"],
-                             ["0", "ABS_TIME", abs_time], [], [])
+                             ["0", "REL_TIME", abs_time], [], [])
 
     
   def play_object(self, source, renderer, item):

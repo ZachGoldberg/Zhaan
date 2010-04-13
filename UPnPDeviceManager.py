@@ -181,6 +181,12 @@ class UPnPDeviceManager(GObject.GObject):
 
     self.emit("device-available", device)
 
+    other_devices = device.list_devices()
+    if other_devices is not None:
+       for sub_device in other_devices:
+          self.device_available(cp, sub_device)
+
+
   def device_unavailable(self, cp, device):
     original = None
     for d in self.devices:
