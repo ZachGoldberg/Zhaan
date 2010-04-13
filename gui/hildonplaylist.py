@@ -107,46 +107,43 @@ class Playlist(gobject.GObject):
                                          title)
 
     def build_control_box(self):
-        if self.playlist:
-            return self.playlist
-
-        self.playlist = gtk.VBox()
+        playlist = gtk.VBox()
 
         # -------
         # Play Control
         # -------
 
-        self.control_box = gtk.HBox()
-        self.play_button = self.new_button("Play")
-        self.control_box.pack_start(self.play_button, True)
-        self.play_button.connect("clicked", self.play)
-        self.play_button.show()
+        control_box = gtk.HBox()
+        play_button = self.new_button("Play")
+        control_box.pack_start(play_button, True)
+        play_button.connect("clicked", self.play)
+        play_button.show()
 
-        self.pause_button = self.new_button("Pause")
-        self.control_box.pack_start(self.pause_button, True)
-        self.pause_button.connect("clicked", self.pause)
-        self.pause_button.show()
+        pause_button = self.new_button("Pause")
+        control_box.pack_start(pause_button, True)
+        pause_button.connect("clicked", self.pause)
+        pause_button.show()
 
-        self.stop_button = self.new_button("Stop")
-        self.control_box.pack_start(self.stop_button, True)
-        self.stop_button.connect("clicked", self.stop)
-        self.stop_button.show()
+        stop_button = self.new_button("Stop")
+        control_box.pack_start(stop_button, True)
+        stop_button.connect("clicked", self.stop)
+        stop_button.show()
 
-        self.prev_button = self.new_button("Previous")
-        self.control_box.pack_start(self.prev_button, True)
-        self.prev_button.connect("clicked", self.prev)
-        self.prev_button.show()
+        prev_button = self.new_button("Previous")
+        control_box.pack_start(prev_button, True)
+        prev_button.connect("clicked", self.prev)
+        prev_button.show()
 
-        self.next_button = self.new_button("Next")
-        self.control_box.pack_start(self.next_button, True)
-        self.next_button.connect("clicked", self.next)
-        self.next_button.show()
+        next_button = self.new_button("Next")
+        control_box.pack_start(next_button, True)
+        next_button.connect("clicked", self.next)
+        next_button.show()
 
-        self.playlist.pack_start(self.control_box, False)
-        self.control_box.show()
+        playlist.pack_start(control_box, False)
+        control_box.show()
 
-        self.playlist.show()        
-        return self.playlist
+        playlist.show()        
+        return playlist
 
     def build_ui(self):
         if self.playlist:
