@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Zhaan
+Icon=zhaan
+Exec=/opt/zhaan/bin/zhaan
+Type=Application
+

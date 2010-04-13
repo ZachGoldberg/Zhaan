@@ -1,0 +1,26 @@
+Source: zhaan
+Section: misc
+Priority: optional
+Maintainer: Zach Goldberg <zach@zachgoldberg.com>
+Build-Depends: debhelper (>= 5), cdbs(>=0.4.49), python-central(>=0.6)
+XS-Python-Version: >= 2.5
+Standards-Version: 3.7.2
+
+Package: zhaan
+Architecture: all
+XB-Python-Version: ${python:Versions}
+Depends:  python (>= 2.5), python-hildon, python-gobject, python-simplejson, python-gtk2, python-gobject-pygi, pygi, libgupnp-1.0-3, libgupnp-av-1.0-2, ${python:Depends}, gobject-introspection, gir1.0-soup-2.4, gir1.0-glib-2.0, gir-repository-dev, libgirepository1.0-0
+Description: A UPnP Control Point based on GUPnP
+ Zhaan is a UPnP Control Point based on GUPnP 
+ bindings and GObject Introspection and PyGI
+ .
+ Features:
+ +Browse MediaServers for Content
+ +Play Content on a MediaRenderer with a Playlist
+ +Change Volume on a Renderer
+ +Pause/Play/Stop on a Renderer
+ +Next/Previous on a Renderer
+ +Show Renderer Status (Playing, paused etc.)
+ +Show currently rendered media item information
+  (artis, album, title etc.)
+ +Seeking within media
