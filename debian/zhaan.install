@@ -1,0 +1,3 @@
+share/*.desktop /usr/share/applications/hildon
+share/*.png usr/share/icons/hicolor/scalable/hildon
+share/*.png usr/share/icons/hicolor/48x48/hildon
