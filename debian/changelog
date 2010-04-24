@@ -1,3 +1,9 @@
+zhaan (0.1-2) unstable; urgency=low
+
+  * Update dependency names to reflect what was uploaded to extras
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sat, 24 Apr 2010 15:06:31 -0400
+
 zhaan (0.1-1) unstable; urgency=low
 
   * Initial release
