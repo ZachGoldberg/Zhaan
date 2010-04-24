@@ -1,5 +1,5 @@
 Source: zhaan
-Section: misc
+Section: user/multimedia
 Priority: optional
 Maintainer: Zach Goldberg <zach@zachgoldberg.com>
 Build-Depends: debhelper (>= 5), cdbs(>=0.4.48), python-central(>=0.6)
