@@ -213,7 +213,8 @@ class HildonZhaanUI(ZhaanUI):
         self.progress.ignore_seek = True
         self.progress.set_value(
             float(self.time_to_int(progress_data["RelTime"])))
-        self.volume_control.set_value(float(volume_data) * -1)
+	if volume_data:
+	        self.volume_control.set_value(float(volume_data) * -1)
         self.progress.ignore_seek = False
 
         return True
