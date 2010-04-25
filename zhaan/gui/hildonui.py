@@ -21,7 +21,7 @@ class HildonZhaanUI(ZhaanUI):
             elif "play" in state.lower():
                 device_state = "Playing"
             elif "stop" in state.lower():
-                device_state = "Stoppted"
+                device_state = "Stopped"
 
             if device_state:
                 self.device_state = device_state
