@@ -302,7 +302,7 @@ class HildonZhaanUI(ZhaanUI):
         
         self.window = hildon.StackableWindow()
         self.window.set_title("Zhaan Control Point")
-
+	self.window.connect("destroy", self.destroy)
         self.window.set_border_width(10)
         self.window.set_default_size(800,480)
 

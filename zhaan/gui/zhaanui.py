@@ -14,6 +14,11 @@ class ZhaanUI(object):
         self.source_device = None
         self.stack = []
         
+
+    def destroy(self, widget, data=None):
+	print "Exiting"
+	gtk.main_quit()
+
     def enqueue_or_dive(self, tree, col_loc, col):
         item = self.items[col_loc[0]]
         if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):

@@ -107,7 +107,7 @@ class GTKZhaanUI(ZhaanUI):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_border_width(10)
         self.window.set_default_size(800,480)
-
+	self.window.connect("destroy", self.destroy)
         self.vbox = gtk.VBox(homogeneous=False)
 
         self.vbox.pack_start(self.init_top_bar(), False)
