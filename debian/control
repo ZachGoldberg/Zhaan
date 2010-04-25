@@ -9,7 +9,7 @@ Standards-Version: 3.7.2
 Package: zhaan
 Architecture: all
 XB-Python-Version: ${python:Versions}
-Depends:  python (>= 2.5), python-hildon, python-gobject, python-simplejson, python-gtk2, python-gobject-pygi, pygi, libgupnp-gi-1.0-3, gir1.0-gupnp, libgupnp-av-1.0-1, ${python:Depends}, gobject-introspection, gir1.0-soup-2.4, gir1.0-glib-2.0, gir-repository-dev, libgirepository1.0-0
+Depends:  python (>= 2.5), python-hildon, python-gobject, python-simplejson, python-gtk2, python-gobject-pygi, pygi, libgupnp-gi-1.0-3, gir1.0-gssdp-1.0, gir1.0-gupnp-1.0, libgupnp-av-1.0-1, ${python:Depends}, gobject-introspection, gir1.0-soup-2.4, gir1.0-glib-2.0, gir-repository-dev, libgirepository1.0-0, gir1.0-freedesktop, gir1.0-gupnp-av-1.0
 Description: A UPnP Control Point based on GUPnP
  Zhaan is a UPnP Control Point based on GUPnP 
  bindings and GObject Introspection and PyGI

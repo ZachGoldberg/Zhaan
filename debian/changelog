@@ -1,3 +1,9 @@
+zhaan (0.1-3) unstable; urgency=low
+
+  * Change gupnp dependency
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sat, 24 Apr 2010 21:13:37 -0400
+
 zhaan (0.1-2) unstable; urgency=low
 
   * Update dependency names to reflect what was uploaded to extras
