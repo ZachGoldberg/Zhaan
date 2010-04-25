@@ -206,5 +206,5 @@ class UPnPDeviceManager(GObject.GObject):
 
     self.emit("device-unavailable", original)
 
-  def server_introspection(self, service, introspection, error, userdata):
+  def server_introspection(self, service, introspection, userdata):
     self.introspections[service.get_udn()] = introspection

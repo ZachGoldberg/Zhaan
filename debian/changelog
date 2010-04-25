@@ -1,3 +1,15 @@
+zhaan (0.1-5) unstable; urgency=low
+
+  * Update volume downloading to be more robust
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sun, 25 Apr 2010 03:06:45 -0400
+
+zhaan (0.1-4) unstable; urgency=low
+
+  * Update code to properly exit process on window close
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sun, 25 Apr 2010 02:42:47 -0400
+
 zhaan (0.1-3) unstable; urgency=low
 
   * Change gupnp dependency
