@@ -298,6 +298,29 @@ class HildonZhaanUI(ZhaanUI):
         GObject.timeout_add(1000, self.pull_renderer_status)
         self.pull_renderer_status()
 
+
+    def search_key_pressed(self, widget, event, dialog, entry):
+        print widget, event, entry
+        if event.keyval == gtk.keysyms.KP_Enter or event.keyval == gtk.keysyms.Return:
+            self.search_directory(dialog, entry)
+            dialog.destroy()
+        else:
+            return False
+
+    def search_dialog(self, button):
+        dialog = gtk.Dialog()
+        dialog.set_transient_for(self.window)
+        entry = hildon.Entry(0)
+
+        entry.connect("key-press-event", self.search_key_pressed, dialog, entry)
+        entry.show()
+        
+        dialog.vbox.pack_start(entry)
+        search_button = dialog.add_button("Search", 1)
+        search_button.connect('clicked', self.search_directory, entry)
+        dialog.run()
+        dialog.destroy()
+        
     def __init__(self, upnp_backend):
         super(HildonZhaanUI, self).__init__(upnp_backend)
         
@@ -321,9 +344,13 @@ class HildonZhaanUI(ZhaanUI):
         controller_button = hildon.Button(0, 0, "Play Control")
         controller_button.connect("clicked", self.change_to_controller)
 
+        search_button = hildon.Button(0, 0, "Search Current Directory")
+        search_button.connect("clicked", self.search_dialog)
+    
         menu = hildon.AppMenu()
         menu.append(clear_button)
         menu.append(controller_button)
+        menu.append(search_button)
         menu.show_all()
 
         self.window.set_app_menu(menu)

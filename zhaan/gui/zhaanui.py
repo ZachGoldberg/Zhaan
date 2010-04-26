@@ -13,16 +13,17 @@ class ZhaanUI(object):
         self.renderer_device = None
         self.source_device = None
         self.stack = []
-        
+        self.current_id = 0
 
     def destroy(self, widget, data=None):
 	print "Exiting"
 	gtk.main_quit()
 
     def enqueue_or_dive(self, tree, col_loc, col):
-        item = self.items[col_loc[0]]
+        item = self.items[col_loc[0]][0]
         if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):
             self.stack.append(item.get_parent_id())
+            self.current_id = item.get_id()
             self.upnp.load_children(self.source_device, item.get_id())
         elif isinstance(item, GUPnPAV.GUPnPDIDLLiteItem):
             self.playlist.add(item, item.get_title())
@@ -46,7 +47,7 @@ class ZhaanUI(object):
         self.add_source_item(object, object.get_title())
 
     def add_source_item(self, item, txt):          
-        self.items.append(item)
+        self.items.append((item, txt))
         self.source_browser.get_model().append([txt])
 
     def clear_source_browser(self):
@@ -148,6 +149,26 @@ class ZhaanUI(object):
 
         cell.set_property('pixbuf', pb)
         return
+
+    def search_directory(self, button, entry):
+        query = entry.get_text()
+        if not query:
+            return
+
+        query = query.lower()
+        # Ideally we would now actually query the remote source
+        # with a search.  However we already have the contents
+        # of the current directory in a local cache, might
+        # as well just do the search ourselves.
+        matching_items = []
+        for (item, text) in self.items:
+            if query in text.lower():
+                matching_items.append((item, text))
+
+        self.stack.append(self.current_id)
+        self.clear_source_browser()
+        for (item, text) in matching_items:
+            self.add_source_item(item, text)
 
     def time_to_int(self, time):
         try:
