@@ -12,7 +12,7 @@ class HildonZhaanUI(ZhaanUI):
 
     def end_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 0)
-                           
+
     def update_renderer_status(self, device, state):
         if device.get_udn() == self.renderer_device.get_udn():
             device_state = ""
@@ -31,17 +31,17 @@ class HildonZhaanUI(ZhaanUI):
     def renderer_changed(self, box, index=None):
         super(HildonZhaanUI, self).renderer_changed(box, index)
         self.window.set_title("Zhaan Control Point")
-        
+
     def remove_source(self, device):
         super(HildonZhaanUI, self).remove_source(device)
-        
+
         if len(self.sources) == 0:
             self.setup_default_source()
             self.source_browser.get_model().clear()
 
     def remove_renderer(self, device):
         super(HildonZhaanUI, self).remove_renderer(device)
-        
+
         if len(self.renderers) == 0:
             self.setup_default_renderer()
 
@@ -49,12 +49,12 @@ class HildonZhaanUI(ZhaanUI):
         self.source_list.get_model(0).append(
             ["No Available Media Sources", None, None])
         self.select_source.set_active(0)
-        
+
     def setup_default_renderer(self):        
         self.renderer_list.get_model(0).append(
             ["No Available Media Players", None, None])
         self.select_renderer.set_active(0)
-        
+
     def add_renderer(self, device, icon_file):
         self.renderers.append(device)
 
@@ -71,7 +71,7 @@ class HildonZhaanUI(ZhaanUI):
 
         if len(self.renderers) == 1:
             self.select_renderer.set_active(0)
-        
+
     def add_source(self, device, icon_file):
         self.sources.append(device)
         if len(self.sources) == 1:
@@ -83,17 +83,17 @@ class HildonZhaanUI(ZhaanUI):
 
         self.icons[device.get_udn()] = icon_file
         self.source_list.get_model(0).append([device.get_friendly_name(), gtk.STOCK_OPEN, device])
-        
+
 
         if len(self.sources) == 1:
             self.select_source.set_active(0)
 
     def init_top_bar(self):
         self.top_bar = gtk.HBox(True)
-        
+
         liststore = gtk.ListStore(str, str, object)
         self.source_list = hildon.TouchSelector()
-        
+
         cellpb = gtk.CellRendererPixbuf()
         cell = gtk.CellRendererText()
 
@@ -106,10 +106,10 @@ class HildonZhaanUI(ZhaanUI):
         self.source_list.set_active(0, 0)
         self.source_list.connect("changed", self.source_changed)
 
-        
+
         liststore = gtk.ListStore(str, str, object)
         self.renderer_list = hildon.TouchSelector()
-        
+
         cellpb = gtk.CellRendererPixbuf()
         cell = gtk.CellRendererText()
         self.renderer_list.append_text_column(liststore, False)
@@ -125,14 +125,14 @@ class HildonZhaanUI(ZhaanUI):
         self.select_source = hildon.PickerButton(0, 0)
         self.select_source.set_selector(self.source_list)               
         self.select_source.show()
-        
+
         self.select_renderer = hildon.PickerButton(0, 0)
         self.select_renderer.set_selector(self.renderer_list)
         self.select_renderer.show()
-        
+
         self.setup_default_source()
         self.setup_default_renderer()
-        
+
         self.top_bar.pack_start(self.select_source)
         self.top_bar.pack_start(self.select_renderer)
         self.source_list.show()
@@ -147,11 +147,11 @@ class HildonZhaanUI(ZhaanUI):
         self.source_browser_win = hildon.PannableArea()
         self.source_browser_win.set_property("mov-mode",
                                          hildon.MOVEMENT_MODE_BOTH)
-        
+
         tree_model = gtk.ListStore(str)
         self.source_browser = gtk.TreeView(tree_model)
         self.source_browser.set_reorderable(True)
-        
+
         col = gtk.TreeViewColumn("Media Items in this Source")
         col.cell = gtk.CellRendererText()
         col.pack_start(col.cell)
@@ -160,7 +160,7 @@ class HildonZhaanUI(ZhaanUI):
         self.source_browser.connect("row-activated", self.enqueue_or_dive)
         self.source_browser_win.add(self.source_browser)
         self.source_browser_win.show()
-        
+
         # -------
         # Main bar packing / cleanup
         # -------
@@ -182,7 +182,7 @@ class HildonZhaanUI(ZhaanUI):
     def pull_renderer_status(self):
         if self.stop_controller:
             return False
-        
+
         try:
             progress_data = self.upnp.get_renderer_status(self.renderer_device)
             volume_data   = self.upnp.get_volume(self.renderer_device)
@@ -200,21 +200,21 @@ class HildonZhaanUI(ZhaanUI):
                 "genre": metadata.genre,
                 "description": metadata.description,
                 }
-        
+
         self.track.set_text("(%s) %s " % (
                 self.device_state, 
                 trackdata.get("title", "Unknown Title")))
 
         self.album.set_text("%s From %s" % (trackdata.get("artist", "Unknown Artist"),
                                             trackdata.get("album", "Unknown Album")))
-        
+
         maxv = float(self.time_to_int(progress_data["TrackDuration"]))
         self.progress.set_range(0, maxv)
         self.progress.ignore_seek = True
         self.progress.set_value(
             float(self.time_to_int(progress_data["RelTime"])))
 	if volume_data:
-	        self.volume_control.set_value(float(volume_data) * -1)
+            self.volume_control.set_value(float(volume_data) * -1)
         self.progress.ignore_seek = False
 
         return True
@@ -225,7 +225,7 @@ class HildonZhaanUI(ZhaanUI):
     def seek_media(self, scale):
         if not self.progress.ignore_seek:
             self.seek("00:" + self.int_to_time(None, scale.get_value()))
-    
+
     def change_volume(self, scale):
         if not self.progress.ignore_seek:
             volume = int(scale.get_value() * -1)
@@ -251,7 +251,7 @@ class HildonZhaanUI(ZhaanUI):
 
         self.album = gtk.Label()
         self.album.show()        
-                         
+
 
         self.volume_control = gtk.VScale()
         self.volume_control.set_range(-100, 0)
@@ -265,7 +265,7 @@ class HildonZhaanUI(ZhaanUI):
         self.progress.show()
         self.progress.connect("format-value", self.int_to_time)
         self.progress.connect("value-changed", self.seek_media)
-        
+
         playlist = Playlist()
         try:
             playlist.build_signals()
@@ -276,18 +276,18 @@ class HildonZhaanUI(ZhaanUI):
         playlist.connect("stop", self.stop)
         playlist.connect("prev", self.prev)
         playlist.connect("next", self.next)
-        
+
 
         controlbox = gtk.HBox()
 
         main = gtk.VBox()
-        
+
         main.add(self.track)
         main.add(self.album)
         main.add(self.progress)
         main.add(playlist.build_control_box())
         main.show()
-        
+
         controlbox.add(self.volume_control)
         controlbox.add(main)
         controlbox.show()
