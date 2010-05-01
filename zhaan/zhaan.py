@@ -125,7 +125,7 @@ class Zhaan(object):
     result, data = control.send_action_list("GetVolume", ["InstanceID",
                                                           "Channel"],
                                             ["0", "Master"],
-                                            ["ChannelVolume"],
+                                            ["CurrentVolume"],
                                             [GObject.TYPE_STRING]
                                             )
     if result and data:
