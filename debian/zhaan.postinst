@@ -7,6 +7,6 @@ PYTHONPATH=/opt/pygi/lib/python2.5/site-packages/gtk-2.0/
 ZHAAN=/usr/share/pyshared/zhaan/zhaan.py
 ZHAANBIN=/opt/zhaan/bin/zhaan
 
-echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH PYTHONPATH=$PYTHONPATH python $ZHAAN" > $ZHAANBIN
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH PYTHONPATH=$PYTHONPATH python2.5 $ZHAAN" > $ZHAANBIN
 chmod +x $ZHAANBIN
 

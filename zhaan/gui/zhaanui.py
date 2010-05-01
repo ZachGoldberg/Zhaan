@@ -165,7 +165,7 @@ class ZhaanUI(object):
             if query in text.lower():
                 matching_items.append((item, text))
 
-        if self.stack[-1] != self.current_id:
+        if self.stack and (self.stack[-1] != self.current_id):
             # If we search within a search we dont want to add
             # to the stack twice
             self.stack.append(self.current_id)

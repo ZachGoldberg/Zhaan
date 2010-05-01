@@ -1,8 +1,15 @@
+zhaan (0.1-6) unstable; urgency=low
+
+  * Bump more dependencies
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Thu, 29 Apr 2010 23:09:35 -0400
+
 zhaan (0.1-5) unstable; urgency=low
 
   * Update volume downloading to be more robust
+  * Implement searching
 
- -- Zach Goldberg <zach@zachgoldberg.com>  Sun, 25 Apr 2010 03:06:45 -0400
+ -- Zach Goldberg <zach@zachgoldberg.com>  Mon, 26 Apr 2010 15:52:03 -0400
 
 zhaan (0.1-4) unstable; urgency=low
 

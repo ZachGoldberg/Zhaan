@@ -38,7 +38,7 @@ class HildonZhaanUI(ZhaanUI):
         if len(self.sources) == 0:
             self.setup_default_source()
             self.source_browser.get_model().clear()
-
+ 
     def remove_renderer(self, device):
         super(HildonZhaanUI, self).remove_renderer(device)
 
