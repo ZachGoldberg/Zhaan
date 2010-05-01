@@ -185,9 +185,12 @@ class Zhaan(object):
 
     if not av_serv:
       return
-    
-    av_serv.send_action_list("SetNextAVTransportURI", ["InstanceID", "NextURI"],
-                             ["0", resources[0]], [], [])
+
+    try:
+      av_serv.send_action_list("SetNextAVTransportURI", ["InstanceID", "NextURI"],
+                               ["0", resources[0]], [], [])
+    except:
+      pass
     
       
   def stop_object(self, source, renderer, item):

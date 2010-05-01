@@ -5,6 +5,7 @@ class Playlist(gobject.GObject):
     def __init__(self):
         self.playlist = None
         self.items = []
+        self.history = []
         super(Playlist, self).__init__()
         
     def build_signals(self):
@@ -42,6 +43,7 @@ class Playlist(gobject.GObject):
 
     def clear(self, button=None):
         self.items = []
+        self.history = []
         self.playlist_box.get_model().clear()
         
         
@@ -92,6 +94,10 @@ class Playlist(gobject.GObject):
         model_iter = self.playlist_box.get_model().get_iter_from_string(str(index))
         self.playlist_box.get_model().remove(model_iter)
         self.items.remove(self.items[0])
+
+    def prepend(self, item, title):
+        self.items.insert(0, item)
+        self.playlist_box.get_model().insert(0, [title])    
 
     def add(self, item, title):
         self.items.append(item)

@@ -141,10 +141,11 @@ class HildonZhaanUI(ZhaanUI):
 
         return self.top_bar
 
-    def play(self, playlist, button):
+    def play(self, playlist, item):
         """
         Player logic:
         If we're in the main view and we hit play we do the following things
+        0) Save the current playing item to the playlist history
         1) SetCurrentURI of the current renderer to the first item in the play list
         2) Move to the control view
         3) Remove the first item from the playlist
@@ -152,9 +153,13 @@ class HildonZhaanUI(ZhaanUI):
 
     
         """
+        # 0) Save to the history
+        if self.playlist.items:
+            self.playlist.history.append(self.playlist.items[0])
+        
         # 1) setUri and begin playing
-        super(HildonZhaanUI, self).stop(playlist, button)
-        super(HildonZhaanUI, self).play(playlist, button)
+        super(HildonZhaanUI, self).stop(playlist, item)
+        super(HildonZhaanUI, self).play(playlist, item)
 
         # 2) Move to control view
         self.change_to_controller()
@@ -163,11 +168,71 @@ class HildonZhaanUI(ZhaanUI):
         self.playlist.rm(0)
 
         # 4) Set NextURI to first item
-        self.upnp.set_next_uri(self.source_device,
-                               self.renderer_device,
-                               self.playlist.items[0])
+        if self.playlist.items:            
+            self.upnp.set_next_uri(self.source_device,
+                                   self.renderer_device,
+                                   self.playlist.items[0])
         
+
+    def prev(self, playlist=None, item=None):
+        """
+        Similar to next() there are really two modes of operation.
+        1) Standard just call previous() if we have no built in zhaan playlist
+        2) Use the built in playing history to determine what to play and use that.
+        """
+        if len(self.playlist.history) < 2:
+            # See the below explanation for why we need < 2 and not < 1
+            super(HildonZhaanUI, self).prev(playlist, item)
+            return
         
+        # Here we have a slight dilema.  Whatever is currently in the control view
+        # is also the first item in the history.  What we really want then is the
+        # second item in the history.  We will therefore first put the current item history[-1]
+        # and the second past item history[-2] back in the playlist, and then simply call Play()
+        # Play will take off the top item in the playlist (history[-2]) and push it onto the history,
+        # and remove it from the top of the playlist
+        current_item = self.playlist.history.pop()
+        new_item = self.playlist.history.pop()
+
+        self.playlist.prepend(current_item, current_item.get_title())
+        self.playlist.prepend(new_item, new_item.get_title())
+
+        self.play(playlist, self.playlist.items[0])
+        
+    def next(self, playlist=None, item=None):
+        """
+        Next Logic:
+        We need to support two paradigms of 'next'.
+        Paradigm One:
+        Zhaan has its own playlist.  By hitting next we wish to advance
+        to the next item in the playlist.  We will use this paradigm if a playlist
+        has been built.
+
+        Paradigm One Actions:
+        1) SetCurrentURI to the next item in the playlist and play
+        2) Remove the front item of the playlist
+        3) SetNextURI to the new first item (the second item)
+
+        Paradigm Two:
+        The renderer has its own notion of Next().
+
+        Paradigm Two Actions:
+        Call next() on the renderer
+        """
+        
+        # Determine which paradigm to use
+        if len(self.playlist.items) == 0:
+            # Paradigm one
+            super(HildonZhaanUI, self).next(playlist, item)
+            return
+
+        # Paradigm two
+        # 1) Set next item and start playing
+        # 2) Remove the next item
+        # 3) Set the next URI
+        # (all of the above are done by play())
+        self.play(playlist, self.playlist.items[0])
+
     def init_main_bar(self):
         self.main_bar = gtk.HBox(homogeneous=True)
 
@@ -247,7 +312,7 @@ class HildonZhaanUI(ZhaanUI):
 
         # Check if we're at the end of the song.  If so, call next().  This is a bit of a hack
         # since we're not paying attention to eventing.
-        if float(self.time_to_int(progress_data["RelTime"])) == maxv:
+        if maxv - float(self.time_to_int(progress_data["RelTime"])) <= 2:
             self.next()
 
         return True
@@ -339,7 +404,6 @@ class HildonZhaanUI(ZhaanUI):
 
 
     def search_key_pressed(self, widget, event, dialog, entry):
-        print widget, event, entry
         if event.keyval == gtk.keysyms.KP_Enter or event.keyval == gtk.keysyms.Return:
             self.search_directory(dialog, entry)
             dialog.destroy()
