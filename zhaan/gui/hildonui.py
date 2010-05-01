@@ -254,6 +254,8 @@ class HildonZhaanUI(ZhaanUI):
 
     def delete_controller(self, window):
         self.stop_controller = True
+        self.in_control_window = False
+        
 
     def seek_media(self, scale):
         if not self.progress.ignore_seek:
@@ -269,7 +271,11 @@ class HildonZhaanUI(ZhaanUI):
         self.controller_win.destroy()
         self.in_control_window = False
 
+
     def change_to_controller(self, button=None):
+        if self.in_control_window:
+            return
+        
         self.stop_controller = False
         self.controller_win = hildon.StackableWindow()
         self.in_control_window = True
@@ -356,6 +362,8 @@ class HildonZhaanUI(ZhaanUI):
         
     def __init__(self, upnp_backend):
         super(HildonZhaanUI, self).__init__(upnp_backend)
+
+        self.in_control_window = False
         
         self.window = hildon.StackableWindow()
         self.window.set_title("Zhaan Control Point")
