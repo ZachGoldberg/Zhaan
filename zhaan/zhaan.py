@@ -171,6 +171,24 @@ class Zhaan(object):
         del data["TrackMetaData"]
 
     return data
+
+  def set_next_uri(self, source, renderer, item):
+    resources = None
+
+    if item:
+      resources = item.get_resources()
+
+    if not resources:
+      return
+
+    av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")
+
+    if not av_serv:
+      return
+    
+    av_serv.send_action_list("SetNextAVTransportURI", ["InstanceID", "NextURI"],
+                             ["0", resources[0]], [], [])
+    
       
   def stop_object(self, source, renderer, item):
     av_serv = self.device_mgr.get_service_on_device(renderer, "AVTransport")

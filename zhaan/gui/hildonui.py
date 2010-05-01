@@ -141,6 +141,33 @@ class HildonZhaanUI(ZhaanUI):
 
         return self.top_bar
 
+    def play(self, playlist, button):
+        """
+        Player logic:
+        If we're in the main view and we hit play we do the following things
+        1) SetCurrentURI of the current renderer to the first item in the play list
+        2) Move to the control view
+        3) Remove the first item from the playlist
+        4) SetNextURI for the new first item (formerly the second item) if it exists
+
+    
+        """
+        # 1) setUri and begin playing
+        super(HildonZhaanUI, self).stop(playlist, button)
+        super(HildonZhaanUI, self).play(playlist, button)
+
+        # 2) Move to control view
+        self.change_to_controller()
+
+        # 3) Remove the first item from the playlist
+        self.playlist.rm(0)
+
+        # 4) Set NextURI to first item
+        self.upnp.set_next_uri(self.source_device,
+                               self.renderer_device,
+                               self.playlist.items[0])
+        
+        
     def init_main_bar(self):
         self.main_bar = gtk.HBox(homogeneous=True)
 

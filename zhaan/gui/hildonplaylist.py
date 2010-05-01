@@ -88,13 +88,11 @@ class Playlist(gobject.GObject):
         self.items[selection[0][0]] = self.items[selection[0][0] + 1]
         self.items[selection[0][0] + 1] = temp
         
-    def rm(self, button):
-        store, selection = self.playlist_box.get_selection().get_selected_rows()
-        self.items.pop(selection[0][0])
+    def rm(self, index):
+        model_iter = self.playlist_box.get_model().get_iter_from_string(str(index))
+        self.playlist_box.get_model().remove(model_iter)
+        self.items.remove(self.items[0])
 
-        model, selected_row_iter = self.playlist_box.get_selection().get_selected()
-        model.remove(selected_row_iter)                
-    
     def add(self, item, title):
         self.items.append(item)
         self.playlist_box.get_model().append([title])
