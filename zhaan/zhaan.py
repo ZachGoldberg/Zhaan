@@ -9,7 +9,7 @@ from action import UPnPAction
 from DIDLParser import DIDLParser
 from UPnPDeviceManager import UPnPDeviceManager
 
-class PyGUPnPCP(object):
+class Zhaan(object):
   def __init__(self):
     self.devices = []
     self.introspections = {}
@@ -311,5 +311,5 @@ class PyGUPnPCP(object):
                                          self.children_loaded, None)
   
 if __name__ == "__main__":
-  prog = PyGUPnPCP()
+  prog = Zhaan()
   prog.main()
