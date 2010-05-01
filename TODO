@@ -4,3 +4,4 @@ Update gtkui with new features of hildonui
 general code cleanup and consistency pass
 Code comments
 Break code into signal handler group and other logical method groups
+Implement playlist saving/loading
