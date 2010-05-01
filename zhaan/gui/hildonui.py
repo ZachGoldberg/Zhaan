@@ -240,9 +240,15 @@ class HildonZhaanUI(ZhaanUI):
         self.progress.ignore_seek = True
         self.progress.set_value(
             float(self.time_to_int(progress_data["RelTime"])))
+
 	if volume_data:
             self.volume_control.set_value(float(volume_data) * -1)
         self.progress.ignore_seek = False
+
+        # Check if we're at the end of the song.  If so, call next().  This is a bit of a hack
+        # since we're not paying attention to eventing.
+        if float(self.time_to_int(progress_data["RelTime"])) == maxv:
+            self.next()
 
         return True
 
