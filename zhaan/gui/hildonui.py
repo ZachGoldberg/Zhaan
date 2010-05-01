@@ -236,7 +236,7 @@ class HildonZhaanUI(ZhaanUI):
         self.controller_win.destroy()
         self.in_control_window = False
 
-    def change_to_controller(self, button):
+    def change_to_controller(self, button=None):
         self.stop_controller = False
         self.controller_win = hildon.StackableWindow()
         self.in_control_window = True
