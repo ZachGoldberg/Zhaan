@@ -1,3 +1,15 @@
+zhaan (0.1-8) unstable; urgency=low
+
+  * Bump version try try and fix reports of a size mismatch.
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sun,  2 May 2010 02:42:58 -0400
+
+zhaan (0.1-7) unstable; urgency=low
+
+  * Zhaan now respects playlists much better
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Sat,  1 May 2010 17:07:01 -0400
+
 zhaan (0.1-6) unstable; urgency=low
 
   * Bump more dependencies

@@ -7,6 +7,9 @@ from gui.zhaanui import ZhaanUI
 
 class HildonZhaanUI(ZhaanUI):        
 
+    # ----------------------------------------------
+    # ---------- PUBLIC UI CONTROLS ----------------
+
     def begin_progress_indicator(self):
         hildon.hildon_gtk_window_set_progress_indicator(self.window, 1)
 
@@ -38,7 +41,7 @@ class HildonZhaanUI(ZhaanUI):
         if len(self.sources) == 0:
             self.setup_default_source()
             self.source_browser.get_model().clear()
- 
+
     def remove_renderer(self, device):
         super(HildonZhaanUI, self).remove_renderer(device)
 
@@ -88,7 +91,57 @@ class HildonZhaanUI(ZhaanUI):
         if len(self.sources) == 1:
             self.select_source.set_active(0)
 
-    def init_top_bar(self):
+    def leave_control_window(self):
+        self.controller_win.destroy()
+        self.in_control_window = False
+
+
+    
+    # ---------------------------------
+    # ------- Callback Handlers -------
+
+    def __search_key_pressed(self, widget, event, dialog, entry):
+        if event.keyval == gtk.keysyms.KP_Enter or event.keyval == gtk.keysyms.Return:
+            self.search_directory(dialog, entry)
+            dialog.destroy()
+        else:
+            return False
+
+
+    def __search_dialog(self, button):
+        dialog = gtk.Dialog()
+        dialog.set_transient_for(self.window)
+        entry = hildon.Entry(0)
+
+        entry.connect("key-press-event", self.__search_key_pressed, dialog, entry)
+        entry.show()
+        
+        dialog.vbox.pack_start(entry)
+        search_button = dialog.add_button("Search", 1)
+        search_button.connect('clicked', self.search_directory, entry)
+        dialog.run()
+        dialog.destroy()
+
+
+    def __seek_media(self, scale):
+        if not self.progress.ignore_seek:
+            self.do_seek("00:" + self.int_to_time(None, scale.get_value()))
+
+    def __delete_controller(self, window):
+        self.stop_controller = True
+        self.in_control_window = False
+        
+    def __change_volume(self, scale):
+        if not self.progress.ignore_seek:
+            volume = int(scale.get_value() * -1)
+            print "Volume: ", volume
+            self.do_set_volume(volume)
+
+    # ----------------------------------
+    # ------- UI INITIALIZATION --------
+
+
+    def __init_top_bar(self):
         self.top_bar = gtk.HBox(True)
 
         liststore = gtk.ListStore(str, str, object)
@@ -141,99 +194,7 @@ class HildonZhaanUI(ZhaanUI):
 
         return self.top_bar
 
-    def play(self, playlist, item):
-        """
-        Player logic:
-        If we're in the main view and we hit play we do the following things
-        0) Save the current playing item to the playlist history
-        1) SetCurrentURI of the current renderer to the first item in the play list
-        2) Move to the control view
-        3) Remove the first item from the playlist
-        4) SetNextURI for the new first item (formerly the second item) if it exists
-
-    
-        """
-        # 0) Save to the history
-        if self.playlist.items:
-            self.playlist.history.append(self.playlist.items[0])
-        
-        # 1) setUri and begin playing
-        super(HildonZhaanUI, self).stop(playlist, item)
-        super(HildonZhaanUI, self).play(playlist, item)
-
-        # 2) Move to control view
-        self.change_to_controller()
-
-        # 3) Remove the first item from the playlist
-        self.playlist.rm(0)
-
-        # 4) Set NextURI to first item
-        if self.playlist.items:            
-            self.upnp.set_next_uri(self.source_device,
-                                   self.renderer_device,
-                                   self.playlist.items[0])
-        
-
-    def prev(self, playlist=None, item=None):
-        """
-        Similar to next() there are really two modes of operation.
-        1) Standard just call previous() if we have no built in zhaan playlist
-        2) Use the built in playing history to determine what to play and use that.
-        """
-        if len(self.playlist.history) < 2:
-            # See the below explanation for why we need < 2 and not < 1
-            super(HildonZhaanUI, self).prev(playlist, item)
-            return
-        
-        # Here we have a slight dilema.  Whatever is currently in the control view
-        # is also the first item in the history.  What we really want then is the
-        # second item in the history.  We will therefore first put the current item history[-1]
-        # and the second past item history[-2] back in the playlist, and then simply call Play()
-        # Play will take off the top item in the playlist (history[-2]) and push it onto the history,
-        # and remove it from the top of the playlist
-        current_item = self.playlist.history.pop()
-        new_item = self.playlist.history.pop()
-
-        self.playlist.prepend(current_item, current_item.get_title())
-        self.playlist.prepend(new_item, new_item.get_title())
-
-        self.play(playlist, self.playlist.items[0])
-        
-    def next(self, playlist=None, item=None):
-        """
-        Next Logic:
-        We need to support two paradigms of 'next'.
-        Paradigm One:
-        Zhaan has its own playlist.  By hitting next we wish to advance
-        to the next item in the playlist.  We will use this paradigm if a playlist
-        has been built.
-
-        Paradigm One Actions:
-        1) SetCurrentURI to the next item in the playlist and play
-        2) Remove the front item of the playlist
-        3) SetNextURI to the new first item (the second item)
-
-        Paradigm Two:
-        The renderer has its own notion of Next().
-
-        Paradigm Two Actions:
-        Call next() on the renderer
-        """
-        
-        # Determine which paradigm to use
-        if len(self.playlist.items) == 0:
-            # Paradigm one
-            super(HildonZhaanUI, self).next(playlist, item)
-            return
-
-        # Paradigm two
-        # 1) Set next item and start playing
-        # 2) Remove the next item
-        # 3) Set the next URI
-        # (all of the above are done by play())
-        self.play(playlist, self.playlist.items[0])
-
-    def init_main_bar(self):
+    def __init_main_bar(self):
         self.main_bar = gtk.HBox(homogeneous=True)
 
         self.source_browser_win = hildon.PannableArea()
@@ -259,8 +220,8 @@ class HildonZhaanUI(ZhaanUI):
         self.playlist = Playlist()
         self.playlist.build_signals()
         self.playlist.connect("play", self.play)
-        self.playlist.connect("pause", self.pause)
-        self.playlist.connect("stop", self.stop)
+        self.playlist.connect("pause", self.do_pause)
+        self.playlist.connect("stop", self.do_stop)
 
         self.main_bar.pack_start(self.source_browser_win, padding=3)
         self.main_bar.pack_start(self.playlist.build_ui(), padding=3)
@@ -317,25 +278,6 @@ class HildonZhaanUI(ZhaanUI):
 
         return True
 
-    def delete_controller(self, window):
-        self.stop_controller = True
-        self.in_control_window = False
-        
-
-    def seek_media(self, scale):
-        if not self.progress.ignore_seek:
-            self.seek("00:" + self.int_to_time(None, scale.get_value()))
-
-    def change_volume(self, scale):
-        if not self.progress.ignore_seek:
-            volume = int(scale.get_value() * -1)
-            print "Volume: ", volume
-            self.set_volume(volume)
-
-    def leave_control_window(self):
-        self.controller_win.destroy()
-        self.in_control_window = False
-
 
     def change_to_controller(self, button=None):
         if self.in_control_window:
@@ -348,7 +290,7 @@ class HildonZhaanUI(ZhaanUI):
         self.controller_win.set_title("Control - %s" %
                                       self.renderer_device.get_friendly_name())
 
-        self.controller_win.connect("destroy", self.delete_controller)
+        self.controller_win.connect("destroy", self.__delete_controller)
 
         self.track = gtk.Label("Loading...")        
         self.track.show()
@@ -361,14 +303,14 @@ class HildonZhaanUI(ZhaanUI):
         self.volume_control.set_range(-100, 0)
         self.volume_control.set_update_policy(gtk.UPDATE_DELAYED)
         self.volume_control.show()
-        self.volume_control.connect("value-changed", self.change_volume)
+        self.volume_control.connect("value-changed", self.__change_volume)
         self.volume_control.connect("format-value", lambda x,y: abs(int(y)))
 
         self.progress = gtk.HScale()
         self.progress.set_update_policy(gtk.UPDATE_DELAYED)
         self.progress.show()
         self.progress.connect("format-value", self.int_to_time)
-        self.progress.connect("value-changed", self.seek_media)
+        self.progress.connect("value-changed", self.__seek_media)
 
         playlist = Playlist()
         try:
@@ -376,8 +318,8 @@ class HildonZhaanUI(ZhaanUI):
         except:
             pass
         playlist.connect("play", self.play)
-        playlist.connect("pause", self.pause)
-        playlist.connect("stop", self.stop)
+        playlist.connect("pause", self.do_pause)
+        playlist.connect("stop", self.do_stop)
         playlist.connect("prev", self.prev)
         playlist.connect("next", self.next)
 
@@ -401,28 +343,6 @@ class HildonZhaanUI(ZhaanUI):
 
         GObject.timeout_add(1000, self.pull_renderer_status)
         self.pull_renderer_status()
-
-
-    def search_key_pressed(self, widget, event, dialog, entry):
-        if event.keyval == gtk.keysyms.KP_Enter or event.keyval == gtk.keysyms.Return:
-            self.search_directory(dialog, entry)
-            dialog.destroy()
-        else:
-            return False
-
-    def search_dialog(self, button):
-        dialog = gtk.Dialog()
-        dialog.set_transient_for(self.window)
-        entry = hildon.Entry(0)
-
-        entry.connect("key-press-event", self.search_key_pressed, dialog, entry)
-        entry.show()
-        
-        dialog.vbox.pack_start(entry)
-        search_button = dialog.add_button("Search", 1)
-        search_button.connect('clicked', self.search_directory, entry)
-        dialog.run()
-        dialog.destroy()
         
     def __init__(self, upnp_backend):
         super(HildonZhaanUI, self).__init__(upnp_backend)
@@ -437,8 +357,8 @@ class HildonZhaanUI(ZhaanUI):
 
         self.vbox = gtk.VBox(homogeneous=False)
 
-        self.vbox.pack_start(self.init_top_bar(), False)
-        self.vbox.pack_start(self.init_main_bar(), True)
+        self.vbox.pack_start(self.__init_top_bar(), False)
+        self.vbox.pack_start(self.__init_main_bar(), True)
         self.window.add(self.vbox)
         self.window.show()
         self.vbox.show()
@@ -450,7 +370,7 @@ class HildonZhaanUI(ZhaanUI):
         controller_button.connect("clicked", self.change_to_controller)
 
         search_button = hildon.Button(0, 0, "Search Current Directory")
-        search_button.connect("clicked", self.search_dialog)
+        search_button.connect("clicked", self.__search_dialog)
     
         menu = hildon.AppMenu()
         menu.append(clear_button)

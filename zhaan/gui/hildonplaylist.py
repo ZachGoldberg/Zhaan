@@ -91,7 +91,12 @@ class Playlist(gobject.GObject):
         self.items[selection[0][0] + 1] = temp
         
     def rm(self, index):
-        model_iter = self.playlist_box.get_model().get_iter_from_string(str(index))
+        try:
+            model_iter = self.playlist_box.get_model().get_iter_from_string(str(index))
+        except:
+            # The playlist could be empty, or other bad index input
+            return
+        
         self.playlist_box.get_model().remove(model_iter)
         self.items.remove(self.items[0])
 
