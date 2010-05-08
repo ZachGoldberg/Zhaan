@@ -31,6 +31,8 @@ class HildonZhaanUI(ZhaanUI):
                 self.window.set_title("Zhaan - %s (%s)" % (device.get_model_name(),
                                                            device_state))
 
+        super(HildonZhaanUI, self).update_renderer_status(device, state)
+
     def renderer_changed(self, box, index=None):
         super(HildonZhaanUI, self).renderer_changed(box, index)
         self.window.set_title("Zhaan Control Point")

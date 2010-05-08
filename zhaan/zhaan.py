@@ -71,13 +71,6 @@ class Zhaan(object):
 	if return_data:
 		return_data = dict(zip(keys, return_data))
 
-
-                # If the player stopped and we still have more music to play,
-                # then play :)
-                if return_data["CurrentTransportState"] == "STOPPED" and \
-                   (not self.ui.empty_playlist()):            
-                  self.ui.next()                  
-                
                 self.ui.update_renderer_status(
                   data,
                   return_data["CurrentTransportState"])
@@ -271,8 +264,7 @@ class Zhaan(object):
       self.ui.remove_renderer(renderer)
       return
 
-    data = {"InstanceID": "0", "CurrentURI": uri,
-            "CurrentURIMetaData": uri, "Speed": 1} 
+    data = {"InstanceID": "0", "Speed": 1} 
     act = UPnPAction(renderer,
                      av_serv,
                      "Play",

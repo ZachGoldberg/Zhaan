@@ -16,7 +16,8 @@ class ZhaanUI(object):
         self.current_id = 0
         self.playlist = None
         self.current_container = None
-
+        self.last_state = None
+        
     def destroy(self, widget, data=None):
 	print "Exiting"
 	gtk.main_quit()
@@ -41,7 +42,17 @@ class ZhaanUI(object):
         pass
 
     def update_renderer_status(self, device, state):
-        pass
+        if device.get_udn() == self.renderer_device.get_udn():
+            # If the player stopped and we still have more music to play,
+            # then play :)
+            
+            if self.last_state == "PLAYING" and state == "STOPPED" and \
+                   (not self.empty_playlist()):
+                print "GOING NEXT"
+                self.next()                  
+
+            self.last_state = state
+
 
     def add_container(self, container):
         self.add_source_item(container, "(+) %s" % container.get_title())
@@ -197,7 +208,7 @@ class ZhaanUI(object):
                        item)
 
     def empty_playlist(self):
-        return bool(self.playlist)
+        return not bool(self.playlist)
     
     # ------------------------
     # ----- Player Logic -----
