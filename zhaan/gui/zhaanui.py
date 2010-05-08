@@ -15,7 +15,7 @@ class ZhaanUI(object):
         self.stack = []
         self.current_id = 0
         self.playlist = None
-
+        self.current_container = None
 
     def destroy(self, widget, data=None):
 	print "Exiting"
@@ -26,6 +26,7 @@ class ZhaanUI(object):
         if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):
             self.stack.append(item.get_parent_id())
             self.current_id = item.get_id()
+            self.current_container = item
             self.upnp.load_children(self.source_device, item.get_id())
         elif isinstance(item, GUPnPAV.GUPnPDIDLLiteItem):
             self.playlist.add(item, item.get_title())
@@ -195,6 +196,8 @@ class ZhaanUI(object):
                        self.renderer_device,
                        item)
 
+    def empty_playlist(self):
+        return bool(self.playlist)
     
     # ------------------------
     # ----- Player Logic -----

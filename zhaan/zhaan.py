@@ -71,6 +71,13 @@ class Zhaan(object):
 	if return_data:
 		return_data = dict(zip(keys, return_data))
 
+
+                # If the player stopped and we still have more music to play,
+                # then play :)
+                if return_data["CurrentTransportState"] == "STOPPED" and \
+                   (not self.ui.empty_playlist()):            
+                  self.ui.next()                  
+                
                 self.ui.update_renderer_status(
                   data,
                   return_data["CurrentTransportState"])
@@ -295,14 +302,24 @@ class Zhaan(object):
 
     parser = DIDLParser(return_data["Result"])
 
-    self.ui.clear_source_browser()
-    for c in parser.containers:
-      self.ui.add_container(c)
+    if not data:
+      self.ui.clear_source_browser()
+      
+      for c in parser.containers:
+        self.ui.add_container(c)
 
-    for o in parser.objects:
-      self.ui.add_object(o)
+      for o in parser.objects:
+        self.ui.add_object(o)
 
-  def load_children(self, device, object_id=0):
+    else:
+      for c in parser.containers:
+        data(c)
+
+      for o in parser.objects:
+        data(o)
+
+
+  def load_children(self, device, object_id=0, callback=None):
     """
     Make an asynchronous call to download the children of this node
     The UI will call this and then continue.  The calback for the
@@ -329,7 +346,7 @@ class Zhaan(object):
                                           "0",
                                           "0",
                                           ""],
-                                         self.children_loaded, None)
+                                         self.children_loaded, callback)
   
 if __name__ == "__main__":
   prog = Zhaan()

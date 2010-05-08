@@ -137,9 +137,27 @@ class HildonZhaanUI(ZhaanUI):
             print "Volume: ", volume
             self.do_set_volume(volume)
 
+    def __options(self, button):
+        pass
+
+    def __add_folder(self, button):
+        """
+        This ones pretty simple.  A recursive add will work fine.
+        """
+
+        def add_item(self, item):
+            print "Add Item", item, item.get_title()
+            if isinstance(item, GUPnPAV.GUPnPDIDLLiteContainer):
+                self.upnp.load_children(self.source_device, item.get_id(),
+                                       lambda i: add_item(self, i))                
+            elif isinstance(item, GUPnPAV.GUPnPDIDLLiteItem):
+                self.playlist.add(item, item.get_title())
+
+        add_item(self, self.current_container)
+
+
     # ----------------------------------
     # ------- UI INITIALIZATION --------
-
 
     def __init_top_bar(self):
         self.top_bar = gtk.HBox(True)
@@ -271,10 +289,6 @@ class HildonZhaanUI(ZhaanUI):
             self.volume_control.set_value(float(volume_data) * -1)
         self.progress.ignore_seek = False
 
-        # Check if we're at the end of the song.  If so, call next().  This is a bit of a hack
-        # since we're not paying attention to eventing.
-        if maxv - float(self.time_to_int(progress_data["RelTime"])) <= 2:
-            self.next()
 
         return True
 
@@ -317,7 +331,8 @@ class HildonZhaanUI(ZhaanUI):
             playlist.build_signals()
         except:
             pass
-        playlist.connect("play", self.play)
+
+        playlist.connect("play", self.play_no_item)
         playlist.connect("pause", self.do_pause)
         playlist.connect("stop", self.do_stop)
         playlist.connect("prev", self.prev)
@@ -372,10 +387,18 @@ class HildonZhaanUI(ZhaanUI):
         search_button = hildon.Button(0, 0, "Search Current Directory")
         search_button.connect("clicked", self.__search_dialog)
     
+        options_button = hildon.Button(0, 0, "Options")
+        options_button.connect("clicked", self.__options)
+
+        add_folder_button = hildon.Button(0, 0, "Add Current Folder to Playlist")
+        add_folder_button.connect("clicked", self.__add_folder)
+    
         menu = hildon.AppMenu()
         menu.append(clear_button)
         menu.append(controller_button)
         menu.append(search_button)
+        menu.append(options_button)
+        menu.append(add_folder_button)
         menu.show_all()
 
         self.window.set_app_menu(menu)
