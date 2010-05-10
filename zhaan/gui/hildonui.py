@@ -112,6 +112,7 @@ class HildonZhaanUI(ZhaanUI):
 
     def __search_dialog(self, button):
         dialog = gtk.Dialog()
+        dialog.set_title("Search Directory")
         dialog.set_transient_for(self.window)
         entry = hildon.Entry(0)
 
