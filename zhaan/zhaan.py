@@ -32,6 +32,12 @@ class Zhaan(object):
       import hildon
       from gui.hildonui import HildonZhaanUI as ZhaanUI
     except:      
+      import traceback
+      print "*" * 10
+      print "Error importing hildon"
+      traceback.print_exc()
+      print "*" * 10
+      print "Attempting to load GTK UI"
       pass
 
     if not "ZhaanUI" in dir():
