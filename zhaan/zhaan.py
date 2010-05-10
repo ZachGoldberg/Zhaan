@@ -8,6 +8,7 @@ from action import UPnPAction
 
 from DIDLParser import DIDLParser
 from UPnPDeviceManager import UPnPDeviceManager
+from config import ZhaanConfig
 
 class Zhaan(object):
   def __init__(self):
@@ -19,7 +20,7 @@ class Zhaan(object):
     self.cps = []
     self.contexts = []  
     self.created_files = []
-
+    self.config = ZhaanConfig()
 
   def main(self):
     self.device_mgr = UPnPDeviceManager()

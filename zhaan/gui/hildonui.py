@@ -140,8 +140,26 @@ class HildonZhaanUI(ZhaanUI):
             print "Volume: ", volume
             self.do_set_volume(volume)
 
+
+    def __option_randomization(self, entry):
+        self.upnp.config.set("Playback", "Randomized", str(entry.get_active()))
+
     def __options(self, button):
-        pass
+        dialog = gtk.Dialog()
+        dialog.set_title("Zhaan Options")
+        dialog.set_transient_for(self.window)
+        entry = hildon.CheckButton(gtk.HILDON_SIZE_AUTO)
+        entry.set_label("Randomized Play")
+        entry.set_active(self.upnp.config.get(
+                "Playback",
+                "Randomized") == "True")
+        entry.connect("clicked", self.__option_randomization)
+        entry.show()
+        
+        dialog.vbox.pack_start(entry)
+        dialog.run()
+        dialog.destroy()
+
 
     def __add_folder(self, button):
         """
