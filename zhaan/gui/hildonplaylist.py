@@ -196,8 +196,10 @@ class Playlist(gobject.GObject):
         tree_model2 = gtk.ListStore(str)
         self.playlist_box = gtk.TreeView(tree_model2)
         
+        hildon.hildon_gtk_tree_view_set_ui_mode(self.playlist_box, 
+                                                gtk.HILDON_UI_MODE_EDIT)
         self.playlist_box.set_reorderable(True)
-        
+
         col2 = gtk.TreeViewColumn("Playlist")
         col2.cell = gtk.CellRendererText()
         col2.pack_start(col2.cell)
