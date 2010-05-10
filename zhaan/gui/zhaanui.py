@@ -1,4 +1,4 @@
-import gtk, time
+import gtk, time, random
 from gi.repository import GUPnPAV
 
 class ZhaanUI(object):
@@ -214,9 +214,12 @@ class ZhaanUI(object):
     # ----- Player Logic -----
     # ------------------------
     
+    def is_random(self):
+        return self.upnp.config.get("Playback", "Randomized") == "True"
+    
     def play(self, playlist, item):
         """
-        Player logic:
+        Normal Player logic:
         If we're in the main view and we hit play we do the following things
         0) Save the current playing item to the playlist history
         1) SetCurrentURI of the current renderer to the first item in the play list
@@ -224,8 +227,17 @@ class ZhaanUI(object):
         3) Remove the first item from the playlist
         4) SetNextURI for the new first item (formerly the second item) if it exists
 
-
+        Randomized Player Logic:
+        To simplify things we entirely forget the concept of history and always
+        just randomly chose a next item
+        1) SetCurrentURI of a random item in the playlist
+        2) Move to control view
         """
+        if self.is_random():
+            self.do_play(playlist, random.choice(self.playlist.items))
+            self.change_to_controller()
+            return
+
         # 0) Save to the history
         if self.playlist.items:
             self.playlist.history.append(self.playlist.items[0])
@@ -253,6 +265,9 @@ class ZhaanUI(object):
         1) Standard just call previous() if we have no built in zhaan playlist
         2) Use the built in playing history to determine what to play and use that.
         """
+        if self.is_random():
+            return self.next(playlist, item)
+            
         if len(self.playlist.history) < 2:
             # See the below explanation for why we need < 2 and not < 1
             self.do_prev(playlist, item)
