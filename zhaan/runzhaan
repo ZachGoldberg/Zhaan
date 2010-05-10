@@ -1,1 +1,1 @@
-LD_LIBRARY_PATH=/opt/pygi:/opt/pygi/lib PYTHONPATH=/opt/pygi/lib/python2.5/site-packages/gtk-2.0/ run-standalone.sh python2.5 zhaan.py
+LD_LIBRARY_PATH=/opt/pygi:/opt/pygi/lib PYTHONPATH=/opt/pygi/lib/python2.5/site-packages/gtk-2.0/:$PYTHONPATH run-standalone.sh python2.5 zhaan.py
