@@ -1,3 +1,9 @@
+zhaan (0.5-1) unstable; urgency=low
+
+  * Zhaan 0.5
+
+ -- Zach Goldberg <zach@zachgoldberg.com>  Thu, 13 May 2010 02:00:23 -0400
+
 zhaan (0.1-8) unstable; urgency=low
 
   * Bump version try try and fix reports of a size mismatch.
